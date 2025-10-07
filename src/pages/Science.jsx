@@ -1,10 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { BookOpenIcon, AwardIcon, StarIcon, ChevronRightIcon, FlaskConicalIcon, ClockIcon, CheckCircleIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { ProgressBar } from '../components/progress/ProgressBar';
+import { lessonService } from '../services/lessonService';
 export function Science() {
   const [activeTab, setActiveTab] = useState('lessons');
+  const [moduleStats, setModuleStats] = useState(null);
+
+  useEffect(() => {
+    loadModuleStats();
+  }, []);
+
+  const loadModuleStats = () => {
+    const stats = lessonService.getModuleStats('Science', 4);
+    setModuleStats(stats);
+  };
   const lessons = [{
     id: 1,
     title: 'Plants & Trees',
@@ -68,7 +80,22 @@ export function Science() {
                   <AwardIcon className="w-6 h-6 mr-2" />
                   <div>
                     <p className="text-sm text-green-200">Your Progress</p>
-                    <p className="font-bold">1/4 Lessons Completed</p>
+                    <p className="font-bold">
+                      {moduleStats ? `${moduleStats.completedLessons}/4 Lessons Completed` : 'Loading...'}
+                    </p>
+                    {moduleStats && (
+                      <div className="mt-2">
+                        <ProgressBar
+                          progress={moduleStats.completedLessons}
+                          total={4}
+                          label=""
+                          color="green"
+                          size="small"
+                          showCount={false}
+                          showPercentage={false}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -84,6 +111,9 @@ export function Science() {
               </button>
               <button className={`px-6 py-4 font-medium text-sm focus:outline-none ${activeTab === 'experiments' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600'}`} onClick={() => setActiveTab('experiments')}>
                 Experiments
+              </button>
+              <button className={`px-6 py-4 font-medium text-sm focus:outline-none ${activeTab === 'exam' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600'}`} onClick={() => setActiveTab('exam')}>
+                Practice Exam
               </button>
               <button className={`px-6 py-4 font-medium text-sm focus:outline-none ${activeTab === 'resources' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600'}`} onClick={() => setActiveTab('resources')}>
                 Resources
@@ -122,7 +152,7 @@ export function Science() {
                             {lesson.duration}
                           </span>
                           <Link to={`/science/lesson/${lesson.id}`} className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
-                            {lesson.completed ? 'Review Lesson' : 'Start Lesson'}
+                            Start Lesson
                           </Link>
                         </div>
                       </div>
@@ -143,6 +173,58 @@ export function Science() {
                 <button className="bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-lg text-sm font-medium transition-colors opacity-50 cursor-not-allowed" disabled>
                   Coming Soon
                 </button>
+              </div>}
+            {activeTab === 'exam' && <div className="bg-white rounded-xl shadow-md p-8">
+                <div className="text-center mb-8">
+                  <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FlaskConicalIcon className="w-8 h-8 text-green-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-2">Science Practice Exam</h3>
+                  <p className="text-gray-600 mb-6">
+                    Test your knowledge of plants, animals, and the world around us
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  <div className="bg-green-50 rounded-lg p-6">
+                    <h4 className="font-semibold text-green-800 mb-2">Exam Details</h4>
+                    <ul className="text-sm text-green-700 space-y-1">
+                      <li>• 8 multiple-choice questions</li>
+                      <li>• 15 minutes time limit</li>
+                      <li>• Covers all lesson topics</li>
+                      <li>• Instant results and feedback</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-blue-50 rounded-lg p-6">
+                    <h4 className="font-semibold text-blue-800 mb-2">What You'll Learn</h4>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>• Plants and their needs</li>
+                      <li>• Animals and their sounds</li>
+                      <li>• Weather and water cycle</li>
+                      <li>• Day and night cycle</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Link to="/science/exam" className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors inline-flex items-center">
+                      <FlaskConicalIcon className="w-5 h-5 mr-2" />
+                      Start Practice Exam
+                    </Link>
+                    <Link
+                      to="/review/science"
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors inline-flex items-center"
+                    >
+                      <BookOpenIcon className="w-5 h-5 mr-2" />
+                      Review Lessons
+                    </Link>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-4">
+                    No time limit for practice - take your time to think through each question
+                  </p>
+                </div>
               </div>}
             {activeTab === 'resources' && <div className="bg-white rounded-xl shadow-md p-8 text-center">
                 <BookOpenIcon className="w-16 h-16 text-green-500 mx-auto mb-4" />
@@ -179,7 +261,7 @@ export function Science() {
                   </p>
                 </div>
                 <Link to="/science/lesson/2" className="bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-lg text-sm font-medium transition-colors">
-                  Start Lesson
+                  Continue Learning
                 </Link>
               </div>
             </div>

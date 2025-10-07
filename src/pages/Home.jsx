@@ -1,9 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { Link } from 'react-router-dom';
-import { BookOpenIcon, ActivityIcon, FlaskConicalIcon, ArrowRightIcon } from 'lucide-react';
+import { BookOpenIcon, ActivityIcon, FlaskConicalIcon, ArrowRightIcon, TrendingUpIcon } from 'lucide-react';
+import { ProgressBar } from '../components/progress/ProgressBar';
+import { lessonService } from '../services/lessonService';
 export function Home() {
+  const [overallProgress, setOverallProgress] = useState(null);
+
+  useEffect(() => {
+    loadOverallProgress();
+  }, []);
+
+  const loadOverallProgress = () => {
+    const moduleConfigs = [
+      { name: 'Mathematics', totalLessons: 4 },
+      { name: 'Science', totalLessons: 4 },
+      { name: 'Indian Sign Language', totalLessons: 4 }
+    ];
+    const progress = lessonService.getOverallProgress(moduleConfigs);
+    setOverallProgress(progress);
+  };
+
   return <div className="flex flex-col min-h-screen bg-blue-50">
       <Header />
       <main className="flex-grow">
@@ -17,12 +35,52 @@ export function Home() {
               Fun, interactive lessons in Indian Sign Language for pre-primary
               students
             </p>
-            <Link to="/signup" className="bg-yellow-400 hover:bg-yellow-500 text-indigo-900 font-bold py-3 px-6 rounded-full text-lg inline-flex items-center transition-colors">
-              Start Learning Now
-              <ArrowRightIcon className="ml-2 w-5 h-5" />
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/signup" className="bg-yellow-400 hover:bg-yellow-500 text-indigo-900 font-bold py-3 px-6 rounded-full text-lg inline-flex items-center transition-colors">
+                Start Learning Now
+                <ArrowRightIcon className="ml-2 w-5 h-5" />
+              </Link>
+              <Link to="/dashboard" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-full text-lg inline-flex items-center transition-colors">
+                View Progress
+                <ArrowRightIcon className="ml-2 w-5 h-5" />
+              </Link>
+            </div>
           </div>
         </section>
+        {/* Overall Progress Section */}
+        {overallProgress && overallProgress.totalLessons > 0 && (
+          <section className="py-8 px-4 bg-white">
+            <div className="container mx-auto">
+              <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-6 text-white">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <TrendingUpIcon className="w-8 h-8 mr-3" />
+                    <div>
+                      <h3 className="text-xl font-bold">Your Learning Progress</h3>
+                      <p className="text-blue-100">
+                        {overallProgress.completedLessons} of {overallProgress.totalLessons} lessons completed
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold">{overallProgress.overallCompletionPercentage}%</div>
+                    <div className="text-sm text-blue-100">Complete</div>
+                  </div>
+                </div>
+                <ProgressBar
+                  progress={overallProgress.completedLessons}
+                  total={overallProgress.totalLessons}
+                  label=""
+                  color="white"
+                  size="medium"
+                  showCount={false}
+                  showPercentage={false}
+                />
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Learning modules section */}
         <section className="py-16 px-4">
           <div className="container mx-auto">
@@ -36,12 +94,32 @@ export function Home() {
                   <BookOpenIcon className="w-16 h-16 text-white" />
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-bold mb-2 text-pink-600">
-                    Indian Sign Language
-                  </h3>
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-xl font-bold text-pink-600">
+                      Indian Sign Language
+                    </h3>
+                    {overallProgress && (
+                      <span className="text-sm font-medium text-gray-500">
+                        {overallProgress.moduleStats['Indian Sign Language']?.completedLessons || 0}/4
+                      </span>
+                    )}
+                  </div>
                   <p className="text-gray-600 mb-4">
                     Learn basic signs through fun, interactive games and videos
                   </p>
+                  {overallProgress && (
+                    <div className="mb-4">
+                      <ProgressBar
+                        progress={overallProgress.moduleStats['Indian Sign Language']?.completedLessons || 0}
+                        total={4}
+                        label=""
+                        color="pink"
+                        size="small"
+                        showCount={false}
+                        showPercentage={false}
+                      />
+                    </div>
+                  )}
                   <Link to="/isl" className="inline-block bg-pink-500 hover:bg-pink-600 text-white py-2 px-4 rounded-lg font-medium transition-colors">
                     Explore ISL
                   </Link>
@@ -53,12 +131,32 @@ export function Home() {
                   <ActivityIcon className="w-16 h-16 text-white" />
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-bold mb-2 text-blue-600">
-                    Mathematics
-                  </h3>
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-xl font-bold text-blue-600">
+                      Mathematics
+                    </h3>
+                    {overallProgress && (
+                      <span className="text-sm font-medium text-gray-500">
+                        {overallProgress.moduleStats['Mathematics']?.completedLessons || 0}/4
+                      </span>
+                    )}
+                  </div>
                   <p className="text-gray-600 mb-4">
                     Visual counting, shapes, and basic number concepts
                   </p>
+                  {overallProgress && (
+                    <div className="mb-4">
+                      <ProgressBar
+                        progress={overallProgress.moduleStats['Mathematics']?.completedLessons || 0}
+                        total={4}
+                        label=""
+                        color="blue"
+                        size="small"
+                        showCount={false}
+                        showPercentage={false}
+                      />
+                    </div>
+                  )}
                   <Link to="/mathematics" className="inline-block bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg font-medium transition-colors">
                     Explore Math
                   </Link>
@@ -70,13 +168,33 @@ export function Home() {
                   <FlaskConicalIcon className="w-16 h-16 text-white" />
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-bold mb-2 text-green-600">
-                    Science
-                  </h3>
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-xl font-bold text-green-600">
+                      Science
+                    </h3>
+                    {overallProgress && (
+                      <span className="text-sm font-medium text-gray-500">
+                        {overallProgress.moduleStats['Science']?.completedLessons || 0}/4
+                      </span>
+                    )}
+                  </div>
                   <p className="text-gray-600 mb-4">
                     Discover plants, animals, and our world through visual
                     learning
                   </p>
+                  {overallProgress && (
+                    <div className="mb-4">
+                      <ProgressBar
+                        progress={overallProgress.moduleStats['Science']?.completedLessons || 0}
+                        total={4}
+                        label=""
+                        color="green"
+                        size="small"
+                        showCount={false}
+                        showPercentage={false}
+                      />
+                    </div>
+                  )}
                   <Link to="/science" className="inline-block bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg font-medium transition-colors">
                     Explore Science
                   </Link>

@@ -1,11 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { BookOpenIcon, AwardIcon, StarIcon, ChevronRightIcon, ActivityIcon, ClockIcon, CheckCircleIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { ProgressBar } from '../components/progress/ProgressBar';
+import { lessonService } from '../services/lessonService';
 
 export function MathematicsModule() {
   const [activeTab, setActiveTab] = useState('lessons');
+  const [moduleStats, setModuleStats] = useState(null);
+
+  useEffect(() => {
+    loadModuleStats();
+  }, []);
+
+  const loadModuleStats = () => {
+    const stats = lessonService.getModuleStats('Mathematics', 4);
+    setModuleStats(stats);
+  };
 
   const lessons = [
     {
@@ -73,7 +85,22 @@ export function MathematicsModule() {
                   <AwardIcon className="w-6 h-6 mr-2" />
                   <div>
                     <p className="text-sm text-blue-200">Your Progress</p>
-                    <p className="font-bold">2/4 Lessons Completed</p>
+                    <p className="font-bold">
+                      {moduleStats ? `${moduleStats.completedLessons}/4 Lessons Completed` : 'Loading...'}
+                    </p>
+                    {moduleStats && (
+                      <div className="mt-2">
+                        <ProgressBar
+                          progress={moduleStats.completedLessons}
+                          total={4}
+                          label=""
+                          color="blue"
+                          size="small"
+                          showCount={false}
+                          showPercentage={false}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -104,6 +131,16 @@ export function MathematicsModule() {
                 onClick={() => setActiveTab('activities')}
               >
                 Activities
+              </button>
+              <button
+                className={`px-6 py-4 font-medium text-sm focus:outline-none ${
+                  activeTab === 'exam'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-500 hover:text-blue-600'
+                }`}
+                onClick={() => setActiveTab('exam')}
+              >
+                Practice Exam
               </button>
               <button
                 className={`px-6 py-4 font-medium text-sm focus:outline-none ${
@@ -162,7 +199,7 @@ export function MathematicsModule() {
                             to={`/mathematics/lesson/${lesson.id}`}
                             className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
                           >
-                            {lesson.completed ? 'Review Lesson' : 'Start Lesson'}
+                            Start Lesson
                           </Link>
                         </div>
                       </div>
@@ -189,6 +226,65 @@ export function MathematicsModule() {
                 >
                   Coming Soon
                 </button>
+              </div>
+            )}
+
+            {/* Practice Exam */}
+            {activeTab === 'exam' && (
+              <div className="bg-white rounded-xl shadow-md p-8">
+                <div className="text-center mb-8">
+                  <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ActivityIcon className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-2">Mathematics Practice Exam</h3>
+                  <p className="text-gray-600 mb-6">
+                    Test your knowledge with our comprehensive practice exam
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  <div className="bg-blue-50 rounded-lg p-6">
+                    <h4 className="font-semibold text-blue-800 mb-2">Exam Details</h4>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>• 8 multiple-choice questions</li>
+                      <li>• 15 minutes time limit</li>
+                      <li>• Covers all lesson topics</li>
+                      <li>• Instant results and feedback</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-green-50 rounded-lg p-6">
+                    <h4 className="font-semibold text-green-800 mb-2">What You'll Learn</h4>
+                    <ul className="text-sm text-green-700 space-y-1">
+                      <li>• Counting and numbers</li>
+                      <li>• Basic shapes</li>
+                      <li>• Simple addition</li>
+                      <li>• Number patterns</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Link
+                      to="/mathematics/exam"
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors inline-flex items-center"
+                    >
+                      <ActivityIcon className="w-5 h-5 mr-2" />
+                      Start Practice Exam
+                    </Link>
+                    <Link
+                      to="/review/mathematics"
+                      className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors inline-flex items-center"
+                    >
+                      <BookOpenIcon className="w-5 h-5 mr-2" />
+                      Review Lessons
+                    </Link>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-4">
+                    No time limit for practice - take your time to think through each question
+                  </p>
+                </div>
               </div>
             )}
 
@@ -237,7 +333,7 @@ export function MathematicsModule() {
                   to="/mathematics/lesson/3"
                   className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-6 rounded-lg text-sm font-medium transition-colors"
                 >
-                  Start Lesson
+                  Continue Learning
                 </Link>
               </div>
             </div>
