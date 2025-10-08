@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { lessonService } from '../services/lessonService';
+import { getVideoForLesson } from '../services/videoLinkService';
 import { 
   ArrowLeftIcon, 
   ArrowRightIcon, 
@@ -54,6 +55,14 @@ export function LessonPage() {
   const lessonNum = parseInt(lessonId);
   const totalLessons = Object.keys(currentModule?.lessons || {}).length;
 
+  // Resolve video source based on module and lesson title using mapping rules
+  const videoSrc = useMemo(() => {
+    if (!currentModule || !currentLesson) return null;
+    return getVideoForLesson(currentModule.name, currentLesson.title);
+  }, [currentModule, currentLesson]);
+
+  const videoRef = useRef(null);
+
   useEffect(() => {
     // Start tracking time when component mounts
     const startTime = Date.now();
@@ -65,6 +74,15 @@ export function LessonPage() {
       setTimeSpent(Math.floor(timeSpentMs / 1000)); // Convert to seconds
     };
   }, []);
+
+  useEffect(() => {
+    // Auto-play when video source changes and element is ready
+    if (videoRef.current && videoSrc) {
+      try {
+        videoRef.current.play().catch(() => {});
+      } catch (_) {}
+    }
+  }, [videoSrc]);
 
   const handleCompleteLesson = async () => {
     if (lessonCompleted) return;
@@ -170,19 +188,25 @@ export function LessonPage() {
                 {currentLesson.content}
               </p>
               
-              {/* Mock lesson content */}
+              {/* Video placeholder (now auto-plays mapped video when available) */}
               <div className="mt-8 p-6 bg-blue-50 rounded-lg">
                 <h3 className="text-xl font-semibold text-blue-800 mb-4">
-                  Interactive Content
+                  Lesson Video
                 </h3>
-                <p className="text-blue-700 mb-4">
-                  This is where the actual lesson content would be displayed. 
-                  It could include videos, interactive elements, quizzes, and more.
-                </p>
-                <div className="bg-white p-4 rounded border-2 border-dashed border-blue-300 text-center">
-                  <p className="text-blue-600 font-medium">
-                    📚 Lesson content would appear here
-                  </p>
+                <div className="bg-white p-4 rounded border border-blue-200">
+                  {videoSrc ? (
+                    <video
+                      ref={videoRef}
+                      src={videoSrc}
+                      controls
+                      autoPlay
+                      className="w-full rounded"
+                    />
+                  ) : (
+                    <p className="text-blue-600 font-medium text-center">
+                      No video available for this lesson.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

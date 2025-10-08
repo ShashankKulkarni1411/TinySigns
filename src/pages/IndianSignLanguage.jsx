@@ -5,6 +5,7 @@ import { BookOpenIcon, AwardIcon, StarIcon, ChevronRightIcon, HandMetalIcon, Clo
 import { Link } from 'react-router-dom';
 import { ProgressBar } from '../components/progress/ProgressBar';
 import { lessonService } from '../services/lessonService';
+// video playback is handled in LessonPage; no per-card video button
 export function IndianSignLanguage() {
   const [activeTab, setActiveTab] = useState('lessons');
   const [moduleStats, setModuleStats] = useState(null);
@@ -147,9 +148,11 @@ export function IndianSignLanguage() {
                             <ClockIcon className="w-4 h-4 inline mr-1" />
                             {lesson.duration}
                           </span>
-                          <Link to={`/isl/lesson/${lesson.id}`} className="bg-pink-500 hover:bg-pink-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
-                            Start Lesson
-                          </Link>
+                          <div className="flex gap-2">
+                            <Link to={`/isl/lesson/${lesson.id}`} className="bg-pink-500 hover:bg-pink-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
+                              Start Lesson
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     </div>)}

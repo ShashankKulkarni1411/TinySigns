@@ -5,6 +5,7 @@ import { BookOpenIcon, AwardIcon, StarIcon, ChevronRightIcon, FlaskConicalIcon, 
 import { Link } from 'react-router-dom';
 import { ProgressBar } from '../components/progress/ProgressBar';
 import { lessonService } from '../services/lessonService';
+// video playback is handled in LessonPage; no per-card video button
 export function Science() {
   const [activeTab, setActiveTab] = useState('lessons');
   const [moduleStats, setModuleStats] = useState(null);
@@ -151,9 +152,11 @@ export function Science() {
                             <ClockIcon className="w-4 h-4 inline mr-1" />
                             {lesson.duration}
                           </span>
-                          <Link to={`/science/lesson/${lesson.id}`} className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
-                            Start Lesson
-                          </Link>
+                          <div className="flex gap-2">
+                            <Link to={`/science/lesson/${lesson.id}`} className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
+                              Start Lesson
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     </div>)}

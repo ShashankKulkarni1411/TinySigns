@@ -304,10 +304,10 @@ export function SignUp() {
               <h1 className="text-3xl font-bold text-green-600 mb-4">Success!</h1>
               <p className="text-gray-600 mb-8">Your account has been created successfully.</p>
               <Link
-                to="/"
+                to="/login"
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors inline-block"
               >
-                Go to Homepage
+                Proceed to Login
               </Link>
             </div>
           )}

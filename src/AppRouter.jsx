@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { Home } from './pages/Home';
+import { LandingPage } from './pages/LandingPage';
 import { SignUp } from './pages/SignUp';
 import { Login } from './pages/Login';
 import { MathematicsModule } from './pages/MathematicsModule';
@@ -22,7 +23,8 @@ export function AppRouter() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
           <Route path="/mathematics" element={<MathematicsModule />} />

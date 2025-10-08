@@ -5,6 +5,7 @@ import { BookOpenIcon, AwardIcon, StarIcon, ChevronRightIcon, ActivityIcon, Cloc
 import { Link } from 'react-router-dom';
 import { ProgressBar } from '../components/progress/ProgressBar';
 import { lessonService } from '../services/lessonService';
+// video playback is handled in LessonPage; no per-card video button
 
 export function MathematicsModule() {
   const [activeTab, setActiveTab] = useState('lessons');
@@ -195,12 +196,14 @@ export function MathematicsModule() {
                             <ClockIcon className="w-4 h-4 inline mr-1" />
                             {lesson.duration}
                           </span>
-                          <Link
-                            to={`/mathematics/lesson/${lesson.id}`}
-                            className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
-                          >
-                            Start Lesson
-                          </Link>
+                          <div className="flex gap-2">
+                            <Link
+                              to={`/mathematics/lesson/${lesson.id}`}
+                              className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+                            >
+                              Start Lesson
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     </div>

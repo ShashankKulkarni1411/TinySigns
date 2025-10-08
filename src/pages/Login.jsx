@@ -63,10 +63,10 @@ export function Login() {
       // Login successful
       await login(userWithProgress);
       
-      // Navigate based on user role
+      // Navigate based on user role (LandingPage is only for first visit)
       switch (user.role) {
         case 'student':
-          navigate('/');
+          navigate('/home');
           break;
         case 'parent':
           navigate('/parent-dashboard');
@@ -78,7 +78,7 @@ export function Login() {
           navigate('/admin-dashboard');
           break;
         default:
-          navigate('/');
+          navigate('/home');
       }
     } catch (err) {
       setError(err.message);
