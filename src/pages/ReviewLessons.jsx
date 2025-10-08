@@ -144,7 +144,7 @@ export function ReviewLessons() {
         <main className="flex-grow flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-800 mb-4">Module Not Found</h1>
-            <Link to="/" className="text-blue-600 hover:text-blue-800">
+            <Link to="/home" className="text-blue-600 hover:text-blue-800">
               Return to Home
             </Link>
           </div>
@@ -343,7 +343,7 @@ export function ReviewLessons() {
             </Link>
             
             <Link
-              to="/"
+              to="/home"
               className="flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
             >
               <HomeIcon className="w-5 h-5 mr-2" />

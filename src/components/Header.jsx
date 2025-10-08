@@ -18,9 +18,11 @@ export function Header() {
     return name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
   };
 
+  // ✅ Adjusted dashboard paths
   const getDashboardPath = () => {
     if (!user) return '/';
     switch (user.role) {
+      case 'student': return '/home';
       case 'parent': return '/parent-dashboard';
       case 'teacher': return '/teacher-dashboard';
       case 'admin': return '/admin-dashboard';
@@ -35,18 +37,21 @@ export function Header() {
           <HandMetalIcon className="w-8 h-8 mr-2" />
           <h1 className="text-2xl font-bold">TINY SIGNS</h1>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <nav className="flex space-x-4">
-            <Link to="/" className="flex items-center hover:bg-indigo-700 px-3 py-2 rounded-lg transition-colors">
+            {/* ✅ Dynamic Home Link */}
+            <Link 
+              to={isAuthenticated ? getDashboardPath() : '/'} 
+              className="flex items-center hover:bg-indigo-700 px-3 py-2 rounded-lg transition-colors"
+            >
               <HomeIcon className="w-5 h-5 mr-1" />
               <span>Home</span>
             </Link>
-            <Link to="/mathematics" className="flex items-center hover:bg-indigo-700 px-3 py-2 rounded-lg transition-colors">
-              <BookOpenIcon className="w-5 h-5 mr-1" />
-              <span>Learn</span>
-            </Link>
-            <Link to="/progress" className="flex items-center hover:bg-indigo-700 px-3 py-2 rounded-lg transition-colors">
+
+          
+
+            <Link to="/Dashboard" className="flex items-center hover:bg-indigo-700 px-3 py-2 rounded-lg transition-colors">
               <BarChartIcon className="w-5 h-5 mr-1" />
               <span>Progress</span>
             </Link>
@@ -64,7 +69,7 @@ export function Header() {
                 <span className="hidden md:block">Welcome, {user.name}</span>
                 <ChevronDownIcon className="w-4 h-4 ml-1" />
               </button>
-              
+
               {showUserMenu && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
                   <Link

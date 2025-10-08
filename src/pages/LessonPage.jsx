@@ -120,7 +120,7 @@ export function LessonPage() {
         <main className="flex-grow flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-800 mb-4">Lesson Not Found</h1>
-            <Link to="/" className="text-blue-600 hover:text-blue-800">
+            <Link to="/home" className="text-blue-600 hover:text-blue-800">
               Return to Home
             </Link>
           </div>
@@ -269,7 +269,7 @@ export function LessonPage() {
                 )}
 
                 <Link
-                  to="/"
+                  to="/home"
                   className="flex items-center bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
                 >
                   <HomeIcon className="w-4 h-4 mr-2" />

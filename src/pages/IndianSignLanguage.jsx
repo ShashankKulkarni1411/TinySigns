@@ -54,7 +54,7 @@ export function IndianSignLanguage() {
         <section className="bg-pink-600 text-white py-8">
           <div className="container mx-auto px-4">
             <div className="flex items-center mb-4">
-              <Link to="/" className="text-pink-100 hover:text-white">
+              <Link to="/home" className="text-pink-100 hover:text-white">
                 Home
               </Link>
               <ChevronRightIcon className="w-4 h-4 mx-2" />
@@ -106,15 +106,11 @@ export function IndianSignLanguage() {
               <button className={`px-6 py-4 font-medium text-sm focus:outline-none ${activeTab === 'lessons' ? 'text-pink-600 border-b-2 border-pink-600' : 'text-gray-500 hover:text-pink-600'}`} onClick={() => setActiveTab('lessons')}>
                 Lessons
               </button>
-              <button className={`px-6 py-4 font-medium text-sm focus:outline-none ${activeTab === 'practice' ? 'text-pink-600 border-b-2 border-pink-600' : 'text-gray-500 hover:text-pink-600'}`} onClick={() => setActiveTab('practice')}>
-                Practice
-              </button>
+            
               <button className={`px-6 py-4 font-medium text-sm focus:outline-none ${activeTab === 'exam' ? 'text-pink-600 border-b-2 border-pink-600' : 'text-gray-500 hover:text-pink-600'}`} onClick={() => setActiveTab('exam')}>
                 Practice Exam
               </button>
-              <button className={`px-6 py-4 font-medium text-sm focus:outline-none ${activeTab === 'videos' ? 'text-pink-600 border-b-2 border-pink-600' : 'text-gray-500 hover:text-pink-600'}`} onClick={() => setActiveTab('videos')}>
-                Videos
-              </button>
+               
             </div>
           </div>
         </div>

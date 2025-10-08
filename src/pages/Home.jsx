@@ -41,16 +41,7 @@ export function Home() {
               Fun, interactive lessons in Indian Sign Language for pre-primary
               students
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/signup" className="bg-yellow-400 hover:bg-yellow-500 text-indigo-900 font-bold py-3 px-6 rounded-full text-lg inline-flex items-center transition-colors">
-                Start Learning Now
-                <ArrowRightIcon className="ml-2 w-5 h-5" />
-              </Link>
-              <Link to="/dashboard" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-full text-lg inline-flex items-center transition-colors">
-                View Progress
-                <ArrowRightIcon className="ml-2 w-5 h-5" />
-              </Link>
-            </div>
+         
           </div>
         </section>
         {/* Overall Progress Section - Only show for authenticated users */}

@@ -8,7 +8,7 @@ export function Footer() {
           learners
         </p>
         <p className="text-sm mt-2">
-          © 2023 TINY SIGNS - Learning for Everyone
+          © 2025 TINY SIGNS - Learning for Everyone
         </p>
       </div>
     </footer>;

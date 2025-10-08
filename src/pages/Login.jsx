@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Header } from '../components/Header';
+import { HeaderLogin } from '../components/HeaderLogin';
 import { Footer } from '../components/Footer';
 import { MailIcon, LockIcon, EyeIcon, EyeOffIcon } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -89,7 +89,7 @@ export function Login() {
 
   return (
     <div className="flex flex-col min-h-screen bg-blue-50">
-      <Header />
+      <HeaderLogin />
       <main className="flex-grow flex items-center justify-center p-4">
         <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
           <div className="text-center mb-8">
