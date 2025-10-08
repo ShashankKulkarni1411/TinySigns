@@ -6,7 +6,7 @@
 
 // Import video assets
 import islAlphabet from '../../Videos for project/isl_alphabet.mp4';
-import islGreetings from '../../Videos for project/isl_basicgreetings.mp4';
+import islGreetings from '../../Videos for project/videoplayback.mp4';
 import mathAddition from '../../Videos for project/math_addition.mp4';
 import mathColoursShapes from '../../Videos for project/math_coloursandshapes.mp4';
 import mathCounting from '../../Videos for project/math_countingnumbers.mp4';
@@ -17,7 +17,7 @@ import scienceWaterCycle from '../../Videos for project/science_watercycle.mp4';
 
 const videos = [
   { file: islAlphabet, name: 'isl_alphabet.mp4' },
-  { file: islGreetings, name: 'isl_basicgreetings.mp4' },
+  { file: islGreetings, name: 'videoplayback.mp4' },
   { file: mathAddition, name: 'math_addition.mp4' },
   { file: mathColoursShapes, name: 'math_coloursandshapes.mp4' },
   { file: mathCounting, name: 'math_countingnumbers.mp4' },
@@ -47,7 +47,7 @@ export function getVideoForLesson(moduleName, lessonTitle) {
       return null; // leave K–T and U–Z & Numbers blank per rule
     }
     if (title.includes('greetings')) {
-      const v = videos.find(v => v.name === 'isl_basicgreetings.mp4');
+      const v = videos.find(v => v.name === 'videoplayback.mp4');
       return v?.file || null;
     }
     return null;

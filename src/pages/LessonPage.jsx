@@ -9,7 +9,8 @@ import {
   CheckCircleIcon, 
   ClockIcon,
   PlayIcon,
-  HomeIcon
+  HomeIcon,
+  SparklesIcon
 } from 'lucide-react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 
@@ -23,29 +24,38 @@ export function LessonPage() {
   const lessonData = {
     'mathematics': {
       name: 'Mathematics',
+      color: 'purple',
+      gradient: 'from-purple-400 via-pink-400 to-red-400',
+      bgGradient: 'from-purple-50 to-pink-50',
       lessons: {
-        1: { title: 'Counting Numbers 1-5', content: 'Learn to count from 1 to 5 with fun visual examples' },
-        2: { title: 'Shapes and Colors', content: 'Explore basic shapes and colors through interactive activities' },
-        3: { title: 'Counting Numbers 6-10', content: 'Continue learning numbers from 6 to 10 with engaging examples' },
-        4: { title: 'Basic Addition', content: 'Start learning addition with visual counting methods' }
+        1: { title: 'Counting Numbers 1-5', content: 'Learn to count from 1 to 5 with fun visual examples', emoji: '🔢' },
+        2: { title: 'Shapes and Colors', content: 'Explore basic shapes and colors through interactive activities', emoji: '🔷' },
+        3: { title: 'Counting Numbers 6-10', content: 'Continue learning numbers from 6 to 10 with engaging examples', emoji: '🔟' },
+        4: { title: 'Basic Addition', content: 'Start learning addition with visual counting methods', emoji: '➕' }
       }
     },
     'science': {
       name: 'Science',
+      color: 'green',
+      gradient: 'from-green-400 via-emerald-400 to-teal-400',
+      bgGradient: 'from-green-50 to-emerald-50',
       lessons: {
-        1: { title: 'Plants & Trees', content: 'Learn about different types of plants and trees' },
-        2: { title: 'Animals & Birds', content: 'Discover various animals, birds and their habitats' },
-        3: { title: 'Water & Weather', content: 'Explore water cycle and different weather conditions' },
-        4: { title: 'Day & Night', content: 'Learn about sun, moon, stars and day-night cycle' }
+        1: { title: 'Plants & Trees', content: 'Learn about different types of plants and trees', emoji: '🌳' },
+        2: { title: 'Animals & Birds', content: 'Discover various animals, birds and their habitats', emoji: '🦜' },
+        3: { title: 'Water & Weather', content: 'Explore water cycle and different weather conditions', emoji: '🌧️' },
+        4: { title: 'Day & Night', content: 'Learn about sun, moon, stars and day-night cycle', emoji: '🌙' }
       }
     },
     'isl': {
       name: 'Indian Sign Language',
+      color: 'blue',
+      gradient: 'from-blue-400 via-indigo-400 to-purple-400',
+      bgGradient: 'from-blue-50 to-indigo-50',
       lessons: {
-        1: { title: 'Basic Greetings', content: 'Learn everyday greetings in Indian Sign Language' },
-        2: { title: 'Alphabet A-J', content: 'Learn to sign the first 10 letters of the alphabet in ISL' },
-        3: { title: 'Alphabet K-T', content: 'Continue learning the alphabet with letters K through T' },
-        4: { title: 'Alphabet U-Z & Numbers', content: 'Complete the alphabet and learn numbers 1-10 in ISL' }
+        1: { title: 'Basic Greetings', content: 'Learn everyday greetings in Indian Sign Language', emoji: '👋' },
+        2: { title: 'Alphabet A-J', content: 'Learn to sign the first 10 letters of the alphabet in ISL', emoji: '🔤' },
+        3: { title: 'Alphabet K-T', content: 'Continue learning the alphabet with letters K through T', emoji: '✋' },
+        4: { title: 'Alphabet U-Z & Numbers', content: 'Complete the alphabet and learn numbers 1-10 in ISL', emoji: '🤟' }
       }
     }
   };
@@ -55,7 +65,6 @@ export function LessonPage() {
   const lessonNum = parseInt(lessonId);
   const totalLessons = Object.keys(currentModule?.lessons || {}).length;
 
-  // Resolve video source based on module and lesson title using mapping rules
   const videoSrc = useMemo(() => {
     if (!currentModule || !currentLesson) return null;
     return getVideoForLesson(currentModule.name, currentLesson.title);
@@ -64,19 +73,15 @@ export function LessonPage() {
   const videoRef = useRef(null);
 
   useEffect(() => {
-    // Start tracking time when component mounts
     const startTime = Date.now();
-    
     return () => {
-      // Calculate time spent when component unmounts
       const endTime = Date.now();
       const timeSpentMs = endTime - startTime;
-      setTimeSpent(Math.floor(timeSpentMs / 1000)); // Convert to seconds
+      setTimeSpent(Math.floor(timeSpentMs / 1000));
     };
   }, []);
 
   useEffect(() => {
-    // Auto-play when video source changes and element is ready
     if (videoRef.current && videoSrc) {
       try {
         videoRef.current.play().catch(() => {});
@@ -102,7 +107,6 @@ export function LessonPage() {
     if (lessonNum < totalLessons) {
       navigate(`/${moduleName}/lesson/${lessonNum + 1}`);
     } else {
-      // All lessons completed, go to review page
       navigate(`/review/${moduleName}`);
     }
   };
@@ -115,13 +119,15 @@ export function LessonPage() {
 
   if (!currentModule || !currentLesson) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-50">
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50">
         <Header />
-        <main className="flex-grow flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Lesson Not Found</h1>
-            <Link to="/home" className="text-blue-600 hover:text-blue-800">
-              Return to Home
+        <main className="flex-grow flex items-center justify-center p-4">
+          <div className="text-center bg-white rounded-3xl shadow-2xl p-12 max-w-md">
+            <div className="text-8xl mb-6">😕</div>
+            <h1 className="text-3xl font-bold text-gray-800 mb-4">Oops! Lesson Not Found</h1>
+            <Link to="/home" className="inline-flex items-center bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-full text-xl font-bold hover:shadow-lg transform hover:scale-105 transition-all">
+              <HomeIcon className="w-6 h-6 mr-2" />
+              Go Home
             </Link>
           </div>
         </main>
@@ -130,139 +136,177 @@ export function LessonPage() {
     );
   }
 
+  const colorClasses = {
+    purple: {
+      badge: 'bg-purple-100 text-purple-800 border-purple-300',
+      button: 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600',
+      iconBg: 'bg-gradient-to-br from-purple-400 to-pink-400',
+      videoBg: 'bg-gradient-to-br from-purple-100 to-pink-100 border-purple-200'
+    },
+    green: {
+      badge: 'bg-green-100 text-green-800 border-green-300',
+      button: 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600',
+      iconBg: 'bg-gradient-to-br from-green-400 to-emerald-400',
+      videoBg: 'bg-gradient-to-br from-green-100 to-emerald-100 border-green-200'
+    },
+    blue: {
+      badge: 'bg-blue-100 text-blue-800 border-blue-300',
+      button: 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600',
+      iconBg: 'bg-gradient-to-br from-blue-400 to-indigo-400',
+      videoBg: 'bg-gradient-to-br from-blue-100 to-indigo-100 border-blue-200'
+    }
+  };
+
+  const colors = colorClasses[currentModule.color];
+
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className={`flex flex-col min-h-screen bg-gradient-to-br ${currentModule.bgGradient}`}>
       <Header />
-      <main className="flex-grow py-8">
-        <div className="container mx-auto px-4">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center mb-4">
-              <Link 
-                to={`/${moduleName}`}
-                className="inline-flex items-center text-blue-600 hover:text-blue-800"
-              >
-                <ArrowLeftIcon className="w-4 h-4 mr-2" />
-                Back to {currentModule.name}
-              </Link>
-            </div>
-            
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                  {currentLesson.title}
-                </h1>
-                <p className="text-gray-600">
-                  Lesson {lessonId} of {totalLessons} • {currentModule.name}
-                </p>
+      <main className="flex-grow py-8 px-4">
+        <div className="container mx-auto max-w-6xl">
+          {/* Breadcrumb Navigation */}
+          <div className="mb-6">
+            <Link 
+              to={`/${moduleName}`}
+              className="inline-flex items-center bg-white text-gray-700 hover:text-gray-900 px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all font-semibold text-lg"
+            >
+              <ArrowLeftIcon className="w-5 h-5 mr-2" />
+              Back to {currentModule.name}
+            </Link>
+          </div>
+
+          {/* Hero Section */}
+          <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 mb-8 border-4 border-white">
+            <div className="flex flex-col items-center text-center mb-8">
+              {/* Large Emoji Icon */}
+              <div className={`w-32 h-32 rounded-full ${colors.iconBg} flex items-center justify-center mb-6 shadow-xl transform hover:scale-110 transition-transform`}>
+                <span className="text-7xl">{currentLesson.emoji}</span>
               </div>
-              
-              <div className="mt-4 md:mt-0 flex items-center space-x-4">
-                <div className="flex items-center text-gray-600">
-                  <ClockIcon className="w-5 h-5 mr-2" />
+
+              {/* Title */}
+              <h1 className="text-4xl md:text-5xl font-black text-gray-800 mb-4 leading-tight">
+                {currentLesson.title}
+              </h1>
+
+              {/* Meta Info */}
+              <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
+                <span className={`px-6 py-3 rounded-full border-2 ${colors.badge} font-bold text-lg shadow-md`}>
+                  Lesson {lessonId} of {totalLessons}
+                </span>
+                <div className="flex items-center bg-gray-100 text-gray-700 px-6 py-3 rounded-full font-bold text-lg shadow-md">
+                  <ClockIcon className="w-6 h-6 mr-2" />
                   <span>{Math.floor(timeSpent / 60)}:{(timeSpent % 60).toString().padStart(2, '0')}</span>
                 </div>
                 {lessonCompleted && (
-                  <div className="flex items-center text-green-600">
-                    <CheckCircleIcon className="w-5 h-5 mr-2" />
-                    <span className="font-medium">Completed</span>
+                  <div className="flex items-center bg-green-100 text-green-700 border-2 border-green-300 px-6 py-3 rounded-full font-bold text-lg shadow-md animate-pulse">
+                    <CheckCircleIcon className="w-6 h-6 mr-2" />
+                    <span>Completed! 🎉</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Description */}
+              <p className="text-xl text-gray-600 max-w-3xl leading-relaxed font-medium">
+                {currentLesson.content}
+              </p>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-bold text-gray-600">Module Progress</span>
+                <span className="text-sm font-bold text-gray-600">{lessonNum}/{totalLessons} Lessons</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
+                <div 
+                  className={`h-full bg-gradient-to-r ${currentModule.gradient} rounded-full transition-all duration-500 shadow-md`}
+                  style={{ width: `${(lessonNum / totalLessons) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Video Section */}
+            <div className={`p-8 rounded-2xl ${colors.videoBg} border-4 shadow-lg`}>
+              <div className="flex items-center justify-center mb-6">
+                <PlayIcon className="w-8 h-8 mr-3 text-gray-700" />
+                <h3 className="text-3xl font-black text-gray-800">
+                  Watch & Learn 📺
+                </h3>
+              </div>
+              <div className="bg-white p-2 rounded-xl shadow-xl">
+                {videoSrc ? (
+                  <video
+                    ref={videoRef}
+                    src={videoSrc}
+                    controls
+                    autoPlay
+                    className="w-full rounded-lg shadow-md"
+                  />
+                ) : (
+                  <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex flex-col items-center justify-center p-12">
+                    <PlayIcon className="w-20 h-20 text-gray-400 mb-4" />
+                    <p className="text-gray-500 font-bold text-xl text-center">
+                      Video coming soon! 🎬
+                    </p>
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Lesson Content */}
-          <div className="bg-white rounded-lg shadow-md p-8 mb-8">
-            <div className="text-center mb-8">
-              <div className="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <PlayIcon className="w-10 h-10 text-blue-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                {currentLesson.title}
-              </h2>
-            </div>
-
-            <div className="prose max-w-none">
-              <p className="text-lg text-gray-700 leading-relaxed">
-                {currentLesson.content}
-              </p>
-              
-              {/* Video placeholder (now auto-plays mapped video when available) */}
-              <div className="mt-8 p-6 bg-blue-50 rounded-lg">
-                <h3 className="text-xl font-semibold text-blue-800 mb-4">
-                  Lesson Video
-                </h3>
-                <div className="bg-white p-4 rounded border border-blue-200">
-                  {videoSrc ? (
-                    <video
-                      ref={videoRef}
-                      src={videoSrc}
-                      controls
-                      autoPlay
-                      className="w-full rounded"
-                    />
-                  ) : (
-                    <p className="text-blue-600 font-medium text-center">
-                      No video available for this lesson.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-              <div className="flex gap-4">
+          {/* Action Buttons - Mobile Optimized */}
+          <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-8 border-4 border-white">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Navigation Buttons */}
+              <div className="flex gap-3">
                 <button
                   onClick={handlePreviousLesson}
                   disabled={lessonNum === 1}
-                  className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
+                  className={`flex-1 flex items-center justify-center px-6 py-4 rounded-2xl font-bold text-lg transition-all shadow-lg ${
                     lessonNum === 1
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white hover:from-gray-500 hover:to-gray-600 transform hover:scale-105'
                   }`}
                 >
-                  <ArrowLeftIcon className="w-4 h-4 mr-2" />
+                  <ArrowLeftIcon className="w-6 h-6 mr-2" />
                   Previous
                 </button>
 
                 <button
                   onClick={handleNextLesson}
-                  className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                  className={`flex-1 flex items-center justify-center ${colors.button} text-white px-6 py-4 rounded-2xl font-bold text-lg transition-all shadow-lg transform hover:scale-105`}
                 >
                   {lessonNum < totalLessons ? (
                     <>
                       Next
-                      <ArrowRightIcon className="w-4 h-4 ml-2" />
+                      <ArrowRightIcon className="w-6 h-6 ml-2" />
                     </>
                   ) : (
                     <>
-                      Finish Module
-                      <CheckCircleIcon className="w-4 h-4 ml-2" />
+                      Finish 🎓
+                      <SparklesIcon className="w-6 h-6 ml-2" />
                     </>
                   )}
                 </button>
               </div>
 
-              <div className="flex gap-4">
+              {/* Action Buttons */}
+              <div className="flex gap-3">
                 {!lessonCompleted && (
                   <button
                     onClick={handleCompleteLesson}
                     disabled={isLoading}
-                    className="flex items-center bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-4 rounded-2xl font-bold text-lg transition-all shadow-lg disabled:opacity-50 transform hover:scale-105"
                   >
                     {isLoading ? (
                       <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Completing...
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-2"></div>
+                        Saving...
                       </>
                     ) : (
                       <>
-                        <CheckCircleIcon className="w-4 h-4 mr-2" />
-                        Mark Complete
+                        <CheckCircleIcon className="w-6 h-6 mr-2" />
+                        Complete ✓
                       </>
                     )}
                   </button>
@@ -270,10 +314,10 @@ export function LessonPage() {
 
                 <Link
                   to="/home"
-                  className="flex items-center bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                  className="flex-1 flex items-center justify-center bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-4 rounded-2xl font-bold text-lg transition-all shadow-lg transform hover:scale-105"
                 >
-                  <HomeIcon className="w-4 h-4 mr-2" />
-                  Home
+                  <HomeIcon className="w-6 h-6 mr-2" />
+                  Home 🏠
                 </Link>
               </div>
             </div>
