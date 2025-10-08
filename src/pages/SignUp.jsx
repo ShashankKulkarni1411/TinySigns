@@ -3,6 +3,7 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { UserIcon, MailIcon, LockIcon, CheckCircleIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { HeaderSignup } from '../components/HeaderSignup';
 
 export function SignUp() {
   const [formStep, setFormStep] = useState(1);
@@ -92,7 +93,7 @@ export function SignUp() {
 
   return (
     <div className="flex flex-col min-h-screen bg-blue-50">
-      <Header />
+      <HeaderSignup />
       <main className="flex-grow flex items-center justify-center p-4">
         <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
           {formStep === 1 && (

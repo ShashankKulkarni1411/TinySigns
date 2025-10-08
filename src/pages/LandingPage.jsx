@@ -1,28 +1,25 @@
-import React, { useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import React, { useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   HandMetalIcon,
   ArrowRightIcon,
   SparklesIcon,
   MessagesSquareIcon,
-  LanguagesIcon,
   BrainCircuitIcon,
   AccessibilityIcon,
   TwitterIcon,
   FacebookIcon,
   InstagramIcon,
   QuoteIcon
-} from 'lucide-react';
+} from "lucide-react";
+import "./LandingPage.css"; // 👈 import the CSS below
 
 export function LandingPage() {
   const signupRef = useRef(null);
-
-  const scrollToSignup = () => {
-    if (signupRef.current) {
-      signupRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
+  const scrollToSignup = () =>
+    signupRef.current?.scrollIntoView({ behavior: "smooth" });
+  const [flipped, setFlipped] = useState(false);
 
   const fadeIn = {
     hidden: { opacity: 0, y: 24 },
@@ -32,174 +29,172 @@ export function LandingPage() {
   const features = [
     {
       icon: MessagesSquareIcon,
-      title: 'Sign-to-Text Conversion',
-      desc: 'Translate gestures into understandable text in real time.'
+      title: "Sign-to-Text Conversion",
+      desc: "Translate gestures into text instantly."
     },
     {
       icon: HandMetalIcon,
-      title: 'Text-to-Sign Visualization',
-      desc: 'See text translated back into clear sign animations.'
-    },
-    {
-      icon: LanguagesIcon,
-      title: 'Bilingual Support',
-      desc: 'Learn in English and Gujarati with ease.'
+      title: "Text-to-Sign Visualization",
+      desc: "Watch your words come alive in sign animations."
     },
     {
       icon: BrainCircuitIcon,
-      title: 'AI-based Gesture Recognition',
-      desc: 'Powered by intelligent models for accurate recognition.'
+      title: "AI-based Gesture Recognition",
+      desc: "Smart models that understand your signs."
     },
     {
       icon: AccessibilityIcon,
-      title: 'Accessible UI',
-      desc: 'Designed for all learners with inclusive patterns.'
+      title: "Accessible UI",
+      desc: "Inclusive design that’s easy for everyone."
     }
   ];
 
   const testimonials = [
     {
-      name: 'Aarav Patel',
-      role: 'Student',
-      avatar: 'https://i.pravatar.cc/120?img=12',
-      text: 'This platform helped me communicate with confidence. The lessons are friendly and effective.'
+      name: "Aarav Patel",
+      role: "Student",
+      avatar: "https://i.pravatar.cc/120?img=12",
+      text: "TinySigns made learning sign language fun and easy! ✨"
     },
     {
-      name: 'Neha Sharma',
-      role: 'Parent',
-      avatar: 'https://i.pravatar.cc/120?img=32',
-      text: 'A beautiful experience for my child. Easy to use and genuinely helpful.'
+      name: "Neha Sharma",
+      role: "Parent",
+      avatar: "https://i.pravatar.cc/120?img=32",
+      text: "My child loves using this app every day. It’s so colorful and engaging! 💖"
     },
     {
-      name: 'Rahul Mehta',
-      role: 'Teacher',
-      avatar: 'https://i.pravatar.cc/120?img=27',
-      text: 'The bilingual support and clear visuals make teaching accessible and fun.'
+      name: "Rahul Mehta",
+      role: "Teacher",
+      avatar: "https://i.pravatar.cc/120?img=27",
+      text: "A perfect way to make communication inclusive and joyful 🎉"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-blue-50 to-purple-100 overflow-x-hidden">
       {/* Navbar */}
-      <nav className="fixed top-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-b border-gray-100 shadow-sm">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <HandMetalIcon className="w-7 h-7 text-blue-600" />
-            <span className="text-lg font-bold text-gray-800">TinySigns</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link to="/login" className="inline-flex items-center px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors">
-              Login / Signup
-              <ArrowRightIcon className="w-4 h-4 ml-2" />
-            </Link>
-          </div>
+      <nav className="fixed top-0 inset-x-0 z-40 bg-white/80 backdrop-blur-xl border-b border-pink-200/40 shadow-md">
+        <div className="container mx-auto px-6 py-3 flex items-center justify-between">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2"
+          >
+            <HandMetalIcon className="w-8 h-8 text-pink-500" />
+            <span className="text-xl font-extrabold text-gray-800">
+              TinySigns
+            </span>
+          </motion.div>
+          <Link
+            to="/login"
+            className="inline-flex items-center px-5 py-2.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold shadow hover:scale-105 transition-transform"
+          >
+            Login / Signup
+            <ArrowRightIcon className="w-4 h-4 ml-2" />
+          </Link>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="pt-28 md:pt-32">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-10 items-center">
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              transition={{ duration: 0.6, ease: 'easeOut' }}
-              variants={fadeIn}
-            >
-              <span className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
-                <SparklesIcon className="w-4 h-4" /> Inclusive Learning
-              </span>
-              <h1 className="mt-4 text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900">
-                Bridging Communication Through Sign Language
-              </h1>
-              <p className="mt-4 text-lg text-gray-600">
-                Empowering Deaf and Mute learners with an interactive sign-to-text and text-to-sign learning experience.
-              </p>
-              <div className="mt-6 flex gap-3">
-                <button onClick={scrollToSignup} className="inline-flex items-center px-6 py-3 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors">
-                  Get Started
-                  <ArrowRightIcon className="w-5 h-5 ml-2" />
-                </button>
-                <Link to="/login" className="inline-flex items-center px-6 py-3 rounded-xl bg-gray-100 text-gray-800 font-medium hover:bg-gray-200 transition-colors">
-                  Login
-                </Link>
-              </div>
-            </motion.div>
+      <section className="pt-32 pb-20">
+        <div className="container mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            variants={fadeIn}
+          >
+            <span className="inline-flex items-center gap-2 bg-pink-100 text-pink-700 px-4 py-1 rounded-full text-sm font-semibold">
+              <SparklesIcon className="w-4 h-4" /> Fun & Inclusive Learning
+            </span>
+            <h1 className="mt-4 text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-pink-500 to-purple-600 leading-tight">
+              Bridging Communication <br /> Through TinySigns 💬✨
+            </h1>
+            <p className="mt-4 text-lg text-gray-700">
+              Empowering Deaf and Mute learners with playful, interactive
+              sign-to-text and text-to-sign learning.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={scrollToSignup}
+                className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-blue-600 to-pink-500 text-white font-bold shadow-lg hover:scale-105 transition-transform"
+              >
+                Get Started
+                <ArrowRightIcon className="w-5 h-5 ml-2" />
+              </button>
+              <Link
+                to="/login"
+                className="inline-flex items-center px-6 py-3 rounded-full bg-white border-2 border-blue-300 text-blue-700 font-semibold hover:bg-blue-50 transition-colors"
+              >
+                Login
+              </Link>
+            </div>
+          </motion.div>
 
+          {/* Flippable Icon Card */}
+          <div
+            className="flip-card w-64 h-64 mx-auto cursor-pointer"
+            onClick={() => setFlipped(!flipped)}
+          >
             <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.6 }}
-              className="relative"
+              className={`flip-card-inner ${flipped ? "flipped" : ""}`}
+              transition={{ duration: 0.8, ease: "easeInOut" }}
             >
-              <div className="absolute -inset-4 bg-blue-200/40 rounded-3xl blur-2xl" />
-              <img
-                src="https://images.unsplash.com/photo-1618677366787-431f2f1a3030?q=80&w=1600&auto=format&fit=crop"
-                alt="Sign Language Learning"
-                className="relative w-full rounded-3xl shadow-xl border border-blue-100"
-              />
+              {/* FRONT */}
+              <div className="flip-card-front bg-gradient-to-tr from-pink-200 via-purple-200 to-blue-200">
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/1209/1209182.png"
+                  alt="Sign Language Learning"
+                  className="w-32 h-32 drop-shadow-xl"
+                />
+                <h2 className="text-xl font-bold text-purple-800 mt-3">
+                  TinySigns
+                </h2>
+              </div>
+
+              {/* BACK */}
+              <div className="flip-card-back bg-gradient-to-tr from-blue-100 via-pink-100 to-purple-100">
+                <h3 className="text-xl font-bold text-purple-700 mb-2">
+                  About TinySigns 💫
+                </h3>
+                <p className="text-sm text-gray-700 px-4">
+                  Learn sign language interactively through AI-powered
+                  recognition and visualization. Making communication inclusive
+                  and joyful for everyone!
+                </p>
+              </div>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* About */}
-      <section className="py-20">
-        <div className="container mx-auto px-4 grid md:grid-cols-2 gap-10 items-center">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={fadeIn}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-3xl font-bold text-gray-900">Learn and Translate Seamlessly</h2>
-            <p className="mt-4 text-gray-600 leading-relaxed">
-              TinySigns enables learners to translate between sign and spoken language with intuitive tools and guided lessons. Explore
-              sign-to-text conversion, visualize text as signs, and build confidence with inclusive, bilingual support.
-            </p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="flex items-center justify-center"
-          >
-            <div className="p-6 bg-white rounded-2xl shadow-md border border-gray-100 inline-flex items-center gap-3">
-              <HandMetalIcon className="w-10 h-10 text-blue-600" />
-              <span className="text-lg font-semibold text-gray-800">Interactive and Inclusive</span>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
       {/* Features */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
+      <section className="py-24 bg-gradient-to-br from-blue-50 via-pink-50 to-purple-50">
+        <div className="container mx-auto px-6">
           <motion.h2
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true }}
             variants={fadeIn}
             transition={{ duration: 0.5 }}
-            className="text-3xl font-bold text-gray-900 text-center"
+            className="text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-pink-600"
           >
-            Powerful Features
+            Magical Features ✨
           </motion.h2>
-          <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((f, idx) => (
               <motion.div
                 key={f.title}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.5, delay: idx * 0.05 }}
-                className="bg-blue-50 rounded-2xl p-6 border border-blue-100 shadow-sm hover:shadow-md transition-shadow"
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                className="bg-white/80 rounded-3xl p-6 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-transform border border-pink-100"
               >
-                <f.icon className="w-8 h-8 text-blue-600" />
-                <h3 className="mt-4 font-semibold text-gray-900">{f.title}</h3>
-                <p className="mt-2 text-sm text-blue-900/80">{f.desc}</p>
+                <div className="p-4 bg-gradient-to-br from-blue-100 via-pink-100 to-purple-100 rounded-2xl inline-flex">
+                  <f.icon className="w-6 h-6 text-blue-600" />
+                </div>
+                <h3 className="mt-4 text-lg font-bold text-gray-900">{f.title}</h3>
+                <p className="mt-2 text-sm text-gray-600">{f.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -208,81 +203,123 @@ export function LandingPage() {
 
       {/* Testimonials */}
       <section className="py-20">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-6">
           <motion.h2
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true }}
             variants={fadeIn}
             transition={{ duration: 0.5 }}
-            className="text-3xl font-bold text-gray-900 text-center"
+            className="text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600"
           >
-            What Learners Say
+            What Learners Say 💬
           </motion.h2>
-          <div className="mt-10 grid md:grid-cols-3 gap-6">
+          <div className="mt-12 grid md:grid-cols-3 gap-6">
             {testimonials.map((t, idx) => (
               <motion.div
                 key={t.name}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.5, delay: idx * 0.05 }}
-                className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-transform hover:-translate-y-0.5"
+                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                className="bg-white rounded-3xl p-6 border border-blue-100 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-transform"
               >
                 <div className="flex items-center gap-3">
-                  <img src={t.avatar} alt={t.name} className="w-12 h-12 rounded-full object-cover" />
+                  <img
+                    src={t.avatar}
+                    alt={t.name}
+                    className="w-12 h-12 rounded-full border-2 border-pink-300 object-cover"
+                  />
                   <div>
-                    <p className="font-semibold text-gray-900">{t.name}</p>
+                    <p className="font-bold text-gray-800">{t.name}</p>
                     <p className="text-xs text-gray-500">{t.role}</p>
                   </div>
                 </div>
-                <div className="mt-4 text-gray-700 text-sm leading-relaxed">
-                  <QuoteIcon className="w-4 h-4 inline text-blue-600 mr-2" />
+                <p className="mt-4 text-gray-700 text-sm leading-relaxed">
+                  <QuoteIcon className="w-4 h-4 inline text-pink-500 mr-2" />
                   {t.text}
-                </div>
+                </p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA + Signup anchor */}
-      <section ref={signupRef} className="py-20 bg-blue-600">
-        <div className="container mx-auto px-4 text-center">
-          <motion.h2
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeIn}
-            transition={{ duration: 0.5 }}
-            className="text-3xl md:text-4xl font-extrabold text-white"
+      {/* CTA */}
+      <section
+        ref={signupRef}
+        className="py-24 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white text-center"
+      >
+        <motion.h2
+          initial="hidden"
+          whileInView="visible"
+          variants={fadeIn}
+          transition={{ duration: 0.5 }}
+          className="text-4xl font-extrabold"
+        >
+          Join the movement toward inclusive learning 🌍💖
+        </motion.h2>
+        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            to="/signup"
+            className="inline-flex items-center px-8 py-3 rounded-full bg-white text-blue-700 font-semibold shadow hover:scale-105 transition-transform"
           >
-            Join the movement toward inclusive learning.
-          </motion.h2>
-          <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/signup" className="inline-flex items-center px-6 py-3 rounded-xl bg-white text-blue-700 font-semibold hover:bg-blue-50 transition-colors">
-              Sign Up Now
-              <ArrowRightIcon className="w-5 h-5 ml-2" />
-            </Link>
-            <Link to="/login" className="inline-flex items-center px-6 py-3 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-400 transition-colors">
-              I already have an account
-            </Link>
-          </div>
+            Sign Up Now
+            <ArrowRightIcon className="w-5 h-5 ml-2" />
+          </Link>
+          <Link
+            to="/login"
+            className="inline-flex items-center px-8 py-3 rounded-full bg-blue-600/40 text-white font-semibold hover:bg-blue-600/60 transition"
+          >
+            I already have an account
+          </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-100">
-        <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <footer className="bg-white border-t border-gray-200 py-8">
+        <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-6 text-sm text-gray-600">
-            <Link to="/" className="hover:text-gray-900">Home</Link>
-            <a href="#about" className="hover:text-gray-900" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>About</a>
-            <Link to="/" className="hover:text-gray-900">Contact</Link>
+            <Link to="/" className="hover:text-blue-600">
+              Home
+            </Link>
+            <a
+              href="#about"
+              onClick={(e) => {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className="hover:text-blue-600"
+            >
+              About
+            </a>
+            <Link to="/" className="hover:text-blue-600">
+              Contact
+            </Link>
           </div>
           <div className="flex items-center gap-4 text-gray-500">
-            <a href="https://twitter.com" target="_blank" rel="noreferrer" className="hover:text-gray-700"><TwitterIcon className="w-5 h-5" /></a>
-            <a href="https://facebook.com" target="_blank" rel="noreferrer" className="hover:text-gray-700"><FacebookIcon className="w-5 h-5" /></a>
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-gray-700"><InstagramIcon className="w-5 h-5" /></a>
+            <a
+              href="https://twitter.com"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-blue-500"
+            >
+              <TwitterIcon className="w-5 h-5" />
+            </a>
+            <a
+              href="https://facebook.com"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-blue-500"
+            >
+              <FacebookIcon className="w-5 h-5" />
+            </a>
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-pink-500"
+            >
+              <InstagramIcon className="w-5 h-5" />
+            </a>
           </div>
         </div>
       </footer>
@@ -291,5 +328,3 @@ export function LandingPage() {
 }
 
 export default LandingPage;
-
-
