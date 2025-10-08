@@ -66,6 +66,12 @@ export function SignUp() {
             password: formData.password,
             role: formData.role,
             avatar: formData.avatar,
+            progress: 0,
+            individualProgress: {
+              mathematics: 0,
+              science: 0,
+              isl: 0
+            }
           }),
         }
       );

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { useAuth } from '../contexts/AuthContext';
+import { lessonService } from '../services/lessonService';
 import { 
   UsersIcon, 
   BookOpenIcon, 
@@ -17,6 +18,14 @@ import { Link } from 'react-router-dom';
 export function ParentDashboard() {
   const { user } = useAuth();
   const [children, setChildren] = useState([]);
+  const [userProgress, setUserProgress] = useState({
+    progress: 0,
+    individualProgress: {
+      mathematics: 0,
+      science: 0,
+      isl: 0
+    }
+  });
   const [overallStats, setOverallStats] = useState({
     totalChildren: 0,
     activeChildren: 0,
@@ -25,6 +34,12 @@ export function ParentDashboard() {
   });
 
   useEffect(() => {
+    // Load user's progress
+    if (user) {
+      const progress = lessonService.getUserProgress();
+      setUserProgress(progress);
+    }
+
     // Mock data for children
     const mockChildren = [
       {
@@ -109,6 +124,29 @@ export function ParentDashboard() {
               </div>
               <div className="bg-white/20 rounded-full p-4">
                 <UsersIcon className="w-12 h-12" />
+              </div>
+            </div>
+          </div>
+
+          {/* User Progress Section */}
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Your Progress</h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-indigo-600">{userProgress.progress}%</div>
+                <div className="text-sm text-gray-600">Overall Progress</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">{userProgress.individualProgress.mathematics}%</div>
+                <div className="text-sm text-gray-600">Mathematics</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{userProgress.individualProgress.science}%</div>
+                <div className="text-sm text-gray-600">Science</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-pink-600">{userProgress.individualProgress.isl}%</div>
+                <div className="text-sm text-gray-600">ISL</div>
               </div>
             </div>
           </div>

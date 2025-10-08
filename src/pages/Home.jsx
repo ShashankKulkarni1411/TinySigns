@@ -5,12 +5,18 @@ import { Link } from 'react-router-dom';
 import { BookOpenIcon, ActivityIcon, FlaskConicalIcon, ArrowRightIcon, TrendingUpIcon } from 'lucide-react';
 import { ProgressBar } from '../components/progress/ProgressBar';
 import { lessonService } from '../services/lessonService';
+import { useAuth } from '../contexts/AuthContext';
+
 export function Home() {
   const [overallProgress, setOverallProgress] = useState(null);
+  const { user, isAuthenticated, syncUserProgress } = useAuth();
 
   useEffect(() => {
-    loadOverallProgress();
-  }, []);
+    if (isAuthenticated && user) {
+      syncUserProgress();
+      loadOverallProgress();
+    }
+  }, [isAuthenticated, user]);
 
   const loadOverallProgress = () => {
     const moduleConfigs = [
@@ -47,8 +53,8 @@ export function Home() {
             </div>
           </div>
         </section>
-        {/* Overall Progress Section */}
-        {overallProgress && overallProgress.totalLessons > 0 && (
+        {/* Overall Progress Section - Only show for authenticated users */}
+        {isAuthenticated && overallProgress && overallProgress.totalLessons > 0 && (
           <section className="py-8 px-4 bg-white">
             <div className="container mx-auto">
               <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-6 text-white">
@@ -98,7 +104,7 @@ export function Home() {
                     <h3 className="text-xl font-bold text-pink-600">
                       Indian Sign Language
                     </h3>
-                    {overallProgress && (
+                    {isAuthenticated && overallProgress && (
                       <span className="text-sm font-medium text-gray-500">
                         {overallProgress.moduleStats['Indian Sign Language']?.completedLessons || 0}/4
                       </span>
@@ -107,7 +113,7 @@ export function Home() {
                   <p className="text-gray-600 mb-4">
                     Learn basic signs through fun, interactive games and videos
                   </p>
-                  {overallProgress && (
+                  {isAuthenticated && overallProgress && (
                     <div className="mb-4">
                       <ProgressBar
                         progress={overallProgress.moduleStats['Indian Sign Language']?.completedLessons || 0}
@@ -135,7 +141,7 @@ export function Home() {
                     <h3 className="text-xl font-bold text-blue-600">
                       Mathematics
                     </h3>
-                    {overallProgress && (
+                    {isAuthenticated && overallProgress && (
                       <span className="text-sm font-medium text-gray-500">
                         {overallProgress.moduleStats['Mathematics']?.completedLessons || 0}/4
                       </span>
@@ -144,7 +150,7 @@ export function Home() {
                   <p className="text-gray-600 mb-4">
                     Visual counting, shapes, and basic number concepts
                   </p>
-                  {overallProgress && (
+                  {isAuthenticated && overallProgress && (
                     <div className="mb-4">
                       <ProgressBar
                         progress={overallProgress.moduleStats['Mathematics']?.completedLessons || 0}
@@ -172,7 +178,7 @@ export function Home() {
                     <h3 className="text-xl font-bold text-green-600">
                       Science
                     </h3>
-                    {overallProgress && (
+                    {isAuthenticated && overallProgress && (
                       <span className="text-sm font-medium text-gray-500">
                         {overallProgress.moduleStats['Science']?.completedLessons || 0}/4
                       </span>
@@ -182,7 +188,7 @@ export function Home() {
                     Discover plants, animals, and our world through visual
                     learning
                   </p>
-                  {overallProgress && (
+                  {isAuthenticated && overallProgress && (
                     <div className="mb-4">
                       <ProgressBar
                         progress={overallProgress.moduleStats['Science']?.completedLessons || 0}

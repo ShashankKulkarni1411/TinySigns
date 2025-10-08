@@ -30,10 +30,21 @@ export function AuthProvider({ children }) {
 
   const login = async (userData) => {
     try {
+      // Initialize progress fields if they don't exist
+      const userWithProgress = {
+        ...userData,
+        progress: userData.progress || 0,
+        individualProgress: userData.individualProgress || {
+          mathematics: 0,
+          science: 0,
+          isl: 0
+        }
+      };
+      
       // Save user data to localStorage
-      localStorage.setItem('tinySignsUser', JSON.stringify(userData));
-      setUser(userData);
-      return userData;
+      localStorage.setItem('tinySignsUser', JSON.stringify(userWithProgress));
+      setUser(userWithProgress);
+      return userWithProgress;
     } catch (error) {
       console.error('Error saving user data:', error);
       throw error;
@@ -51,11 +62,25 @@ export function AuthProvider({ children }) {
     setUser(newUserData);
   };
 
+  const syncUserProgress = () => {
+    // Sync user progress from localStorage
+    const savedUser = localStorage.getItem('tinySignsUser');
+    if (savedUser && user) {
+      try {
+        const updatedUser = JSON.parse(savedUser);
+        setUser(updatedUser);
+      } catch (error) {
+        console.error('Error syncing user progress:', error);
+      }
+    }
+  };
+
   const value = {
     user,
     login,
     logout,
     updateUser,
+    syncUserProgress,
     loading,
     isAuthenticated: !!user,
   };

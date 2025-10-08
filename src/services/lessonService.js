@@ -8,13 +8,70 @@ class LessonService {
 
   // Get current user ID
   getCurrentUserId() {
-    const user = localStorage.getItem(this.userKey);
+    const user = localStorage.getItem('tinySignsUser');
     if (user) {
       return JSON.parse(user).id;
     }
     const tempUserId = 'user_' + Date.now();
     localStorage.setItem(this.userKey, JSON.stringify({ id: tempUserId }));
     return tempUserId;
+  }
+
+  // Update user's progress in localStorage
+  updateUserProgress(moduleName, progressValue) {
+    try {
+      const user = localStorage.getItem('tinySignsUser');
+      if (user) {
+        const userData = JSON.parse(user);
+        const moduleKey = moduleName.toLowerCase() === 'indian sign language' ? 'isl' : moduleName.toLowerCase();
+        
+        // Update individual progress
+        userData.individualProgress = userData.individualProgress || {
+          mathematics: 0,
+          science: 0,
+          isl: 0
+        };
+        userData.individualProgress[moduleKey] = progressValue;
+        
+        // Calculate total progress (average of all modules)
+        const totalProgress = Object.values(userData.individualProgress).reduce((sum, val) => sum + val, 0) / 3;
+        userData.progress = Math.round(totalProgress);
+        
+        localStorage.setItem('tinySignsUser', JSON.stringify(userData));
+        return userData;
+      }
+    } catch (error) {
+      console.error('Error updating user progress:', error);
+    }
+    return null;
+  }
+
+  // Get user's current progress
+  getUserProgress() {
+    try {
+      const user = localStorage.getItem('tinySignsUser');
+      if (user) {
+        const userData = JSON.parse(user);
+        return {
+          progress: userData.progress || 0,
+          individualProgress: userData.individualProgress || {
+            mathematics: 0,
+            science: 0,
+            isl: 0
+          }
+        };
+      }
+    } catch (error) {
+      console.error('Error getting user progress:', error);
+    }
+    return {
+      progress: 0,
+      individualProgress: {
+        mathematics: 0,
+        science: 0,
+        isl: 0
+      }
+    };
   }
 
   // Mark lesson as completed
@@ -50,6 +107,11 @@ class LessonService {
       }
 
       localStorage.setItem(this.storageKey, JSON.stringify(existingProgress));
+      
+      // Update user's progress based on lesson completion
+      const moduleStats = this.getModuleStats(moduleName, 4); // Assuming 4 lessons per module
+      this.updateUserProgress(moduleName, moduleStats.completionPercentage);
+      
       return lessonRecord;
     } catch (error) {
       console.error('Error completing lesson:', error);
@@ -77,6 +139,11 @@ class LessonService {
       }
 
       localStorage.setItem(this.storageKey, JSON.stringify(existingProgress));
+      
+      // Update user's progress based on lesson completion
+      const moduleStats = this.getModuleStats(moduleName, 4); // Assuming 4 lessons per module
+      this.updateUserProgress(moduleName, moduleStats.completionPercentage);
+      
       return existingProgress[existingIndex];
     } catch (error) {
       console.error('Error rewatching lesson:', error);

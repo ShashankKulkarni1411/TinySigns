@@ -49,8 +49,19 @@ export function Login() {
         return;
       }
 
+      // Ensure user has progress fields initialized
+      const userWithProgress = {
+        ...user,
+        progress: user.progress || 0,
+        individualProgress: user.individualProgress || {
+          mathematics: 0,
+          science: 0,
+          isl: 0
+        }
+      };
+
       // Login successful
-      await login(user);
+      await login(userWithProgress);
       
       // Navigate based on user role
       switch (user.role) {
