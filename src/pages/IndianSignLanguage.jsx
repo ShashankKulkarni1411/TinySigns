@@ -31,8 +31,6 @@ export function IndianSignLanguage() {
       id: 1,
       title: "Basic Greetings",
       description: "Learn everyday greetings in Indian Sign Language.",
-      image:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTevNcVaTpHfpefFF2oHOsugpcIBIUIwapvDQ&s",
       duration: "10 min",
       completed: true,
       emoji: "🤟",
@@ -41,7 +39,6 @@ export function IndianSignLanguage() {
       id: 2,
       title: "Alphabet A–J",
       description: "Learn to sign the first 10 letters of the alphabet in ISL.",
-      image: "https://cdn-icons-png.flaticon.com/512/2922/2922510.png",
       duration: "20 min",
       completed: true,
       emoji: "🅰️",
@@ -50,8 +47,6 @@ export function IndianSignLanguage() {
       id: 3,
       title: "Alphabet K–T",
       description: "Continue learning the alphabet with letters K through T.",
-      image:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3v09WvcXchAZjyeCGVpb_PlOCCx1gkELh1Q&s",
       duration: "20 min",
       completed: false,
       emoji: "🔤",
@@ -60,8 +55,6 @@ export function IndianSignLanguage() {
       id: 4,
       title: "Alphabet U–Z & Numbers",
       description: "Complete the alphabet and learn numbers 1–10 in ISL.",
-      image:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQlO5fCYqAyUktJYN75iuDMSV8nAlSOvzsdJg&s",
       duration: "25 min",
       completed: false,
       emoji: "🔢",
