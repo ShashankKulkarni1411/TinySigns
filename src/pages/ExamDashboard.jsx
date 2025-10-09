@@ -27,7 +27,7 @@ export function ExamDashboardPage() {
           {/* Header / Navigation */}
           <div className="bg-white rounded-2xl shadow-md p-6 mb-8 border border-indigo-100">
             <Link 
-              to="/" 
+              to="/home" 
               className="inline-flex items-center text-indigo-600 hover:text-indigo-800 mb-3 transition-colors"
             >
               <ArrowLeftIcon className="w-5 h-5 mr-2" />

@@ -85,7 +85,7 @@ export function MathematicsModule() {
           <div className="container mx-auto px-4 relative z-10">
             {/* Breadcrumb */}
             <div className="flex items-center mb-6">
-              <Link to="/" className="text-white/80 hover:text-white font-medium transition-colors">
+              <Link to="/home" className="text-white/80 hover:text-white font-medium transition-colors">
                 🏠 Home
               </Link>
               <ChevronRightIcon className="w-5 h-5 mx-2 text-white/60" />

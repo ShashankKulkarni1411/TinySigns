@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { Header } from "../components/Header";
+import { Footer } from "../components/Footer";
+import { lessonService } from "../services/lessonService";
 import {
   BookOpenIcon,
   AwardIcon,
@@ -8,12 +10,12 @@ import {
   HandMetalIcon,
   ClockIcon,
   CheckCircleIcon,
+  RocketIcon,
+  SparklesIcon,
+  TrophyIcon,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ProgressBar } from "../components/progress/ProgressBar";
-import { lessonService } from "../services/lessonService";
-import { Header } from "../components/Header";
-import { Footer } from "../components/Footer";
 
 export function IndianSignLanguage() {
   const [activeTab, setActiveTab] = useState("lessons");
@@ -24,11 +26,6 @@ export function IndianSignLanguage() {
     setModuleStats(stats);
   }, []);
 
-  const fadeIn = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
-
   const lessons = [
     {
       id: 1,
@@ -38,6 +35,7 @@ export function IndianSignLanguage() {
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTevNcVaTpHfpefFF2oHOsugpcIBIUIwapvDQ&s",
       duration: "10 min",
       completed: true,
+      emoji: "🤟",
     },
     {
       id: 2,
@@ -46,6 +44,7 @@ export function IndianSignLanguage() {
       image: "https://cdn-icons-png.flaticon.com/512/2922/2922510.png",
       duration: "20 min",
       completed: true,
+      emoji: "🅰️",
     },
     {
       id: 3,
@@ -55,254 +54,272 @@ export function IndianSignLanguage() {
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3v09WvcXchAZjyeCGVpb_PlOCCx1gkELh1Q&s",
       duration: "20 min",
       completed: false,
+      emoji: "🔤",
     },
     {
       id: 4,
       title: "Alphabet U–Z & Numbers",
-      description:
-        "Complete the alphabet and learn numbers 1–10 in ISL.",
+      description: "Complete the alphabet and learn numbers 1–10 in ISL.",
       image:
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQlO5fCYqAyUktJYN75iuDMSV8nAlSOvzsdJg&s",
       duration: "25 min",
       completed: false,
+      emoji: "🔢",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-pink-50 to-purple-50 flex flex-col font-inter">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 font-inter">
       <Header />
-
-      {/* Module Header */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white py-14 shadow-lg">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/soft-wallpaper.png')] opacity-20"></div>
-        <div className="container relative mx-auto px-6">
-          <div className="flex items-center mb-4 text-sm">
-            <Link to="/" className="text-pink-100 hover:text-white">
-              Home
-            </Link>
-            <ChevronRightIcon className="w-4 h-4 mx-2" />
-            <span className="font-medium">Indian Sign Language</span>
+      <main className="flex-grow">
+        {/* HEADER SECTION */}
+        <section className="bg-gradient-to-r from-pink-600 via-purple-500 to-blue-600 text-white py-12 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-10 left-10 text-8xl">🤟</div>
+            <div className="absolute bottom-10 right-20 text-7xl">👐</div>
+            <div className="absolute top-20 right-10 text-6xl">👋</div>
           </div>
 
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-            <motion.div
-              variants={fadeIn}
-              initial="hidden"
-              animate="visible"
-              transition={{ duration: 0.6 }}
-              className="flex items-center gap-5"
-            >
-              <div className="bg-white p-5 rounded-full shadow-2xl ring-2 ring-pink-300/50 hover:rotate-3 transition-transform">
-                <HandMetalIcon className="w-12 h-12 text-pink-600" />
-              </div>
-              <div>
-                <h1 className="text-4xl font-extrabold tracking-tight">
-                  Indian Sign Language
-                </h1>
-                <p className="text-pink-100 text-sm md:text-base">
-                  Learn to communicate through expressive gestures 🤟✨
-                </p>
-              </div>
-            </motion.div>
+          <div className="container mx-auto px-4 relative z-10">
+            {/* Breadcrumb */}
+            <div className="flex items-center mb-6">
+              <Link
+                to="/home"
+                className="text-white/80 hover:text-white font-medium transition-colors"
+              >
+                🏠 Home
+              </Link>
+              <ChevronRightIcon className="w-5 h-5 mx-2 text-white/60" />
+              <span className="font-semibold">Indian Sign Language</span>
+            </div>
 
-            <motion.div
-              variants={fadeIn}
-              initial="hidden"
-              animate="visible"
-              transition={{ delay: 0.3, duration: 0.6 }}
-              className="bg-white/20 rounded-2xl p-5 backdrop-blur-xl border border-white/40 shadow-lg hover:shadow-2xl transition-all"
-            >
-              <div className="flex items-center gap-3">
-                <AwardIcon className="w-7 h-7 text-yellow-300" />
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+              {/* Module Title */}
+              <div className="flex items-center mb-6 md:mb-0">
+                <div className="bg-white p-4 rounded-2xl shadow-xl mr-4 transform hover:scale-110 transition-transform">
+                  <HandMetalIcon className="w-12 h-12 text-pink-600" />
+                </div>
                 <div>
-                  <p className="text-sm text-pink-100">Your Progress</p>
-                  <p className="font-semibold">
-                    {moduleStats
-                      ? `${moduleStats.completedLessons}/4 Lessons Completed`
-                      : "Loading..."}
+                  <h1 className="text-4xl md:text-5xl font-black mb-2">
+                    Indian Sign Language
+                  </h1>
+                  <p className="text-xl text-white/90 font-medium">
+                    Learn to communicate through expressive gestures ✨
                   </p>
-                  {moduleStats && (
-                    <div className="mt-2">
+                </div>
+              </div>
+
+              {/* Progress */}
+              <div className="bg-white/20 backdrop-blur-lg rounded-2xl p-6 shadow-2xl border-2 border-white/30 min-w-[280px]">
+                <div className="flex items-center">
+                  <div className="bg-yellow-400 p-3 rounded-xl mr-4">
+                    <AwardIcon className="w-8 h-8 text-yellow-900" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-white/80 font-medium mb-1">
+                      Your Progress
+                    </p>
+                    <p className="font-black text-xl mb-2">
+                      {moduleStats
+                        ? `${moduleStats.completedLessons}/4 Lessons ⭐`
+                        : "Loading..."}
+                    </p>
+                    {moduleStats && (
                       <ProgressBar
                         progress={moduleStats.completedLessons}
                         total={4}
-                        color="pink"
+                        label=""
+                        color="white"
                         size="small"
+                        showCount={false}
+                        showPercentage={false}
                       />
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* TAB NAVIGATION */}
+        <div className="bg-white shadow-lg sticky top-0 z-40">
+          <div className="container mx-auto">
+            <div className="flex overflow-x-auto">
+              <button
+                className={`px-8 py-4 font-bold text-base focus:outline-none transition-all relative ${
+                  activeTab === "lessons"
+                    ? "text-pink-600 bg-pink-50"
+                    : "text-gray-600 hover:text-pink-600 hover:bg-pink-50/50"
+                }`}
+                onClick={() => setActiveTab("lessons")}
+              >
+                📚 Lessons
+                {activeTab === "lessons" && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-600 to-purple-600"></div>
+                )}
+              </button>
+
+              <button
+                className={`px-8 py-4 font-bold text-base focus:outline-none transition-all relative ${
+                  activeTab === "exam"
+                    ? "text-pink-600 bg-pink-50"
+                    : "text-gray-600 hover:text-pink-600 hover:bg-pink-50/50"
+                }`}
+                onClick={() => setActiveTab("exam")}
+              >
+                📝 Practice Exam
+                {activeTab === "exam" && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-600 to-purple-600"></div>
+                )}
+              </button>
+            </div>
           </div>
         </div>
-      </section>
 
-      {/* Tabs */}
-      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-md shadow-md border-b border-pink-100">
-        <div className="container mx-auto flex justify-center">
-          {["lessons", "exam"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-8 py-4 text-sm md:text-base font-semibold tracking-wide transition-all duration-300 ${
-                activeTab === tab
-                  ? "text-pink-600 border-b-4 border-pink-600"
-                  : "text-gray-500 hover:text-pink-600"
-              }`}
-            >
-              {tab === "lessons" ? "Lessons" : "Practice Exam"}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Lessons / Exam Section */}
-      <main className="flex-grow">
-        <section className="py-14">
-          <div className="container mx-auto px-6">
+        {/* CONTENT SECTION */}
+        <section className="py-12">
+          <div className="container mx-auto px-4">
+            {/* Lessons Tab */}
             {activeTab === "lessons" && (
               <>
-                <motion.h2
-                  variants={fadeIn}
-                  initial="hidden"
-                  whileInView="visible"
-                  transition={{ duration: 0.6 }}
-                  className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 text-center mb-12"
-                >
-                  Explore ISL Lessons 💫
-                </motion.h2>
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-4xl font-black text-gray-800 flex items-center gap-3">
+                    <SparklesIcon className="w-10 h-10 text-pink-600" />
+                    Explore ISL Lessons
+                  </h2>
+                  <div className="bg-pink-100 px-6 py-3 rounded-full">
+                    <span className="font-bold text-pink-800">
+                      4 Engaging Lessons! 🤟
+                    </span>
+                  </div>
+                </div>
 
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10">
-                  {lessons.map((lesson, idx) => (
-                    <motion.div
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {lessons.map((lesson) => (
+                    <div
                       key={lesson.id}
-                      variants={fadeIn}
-                      initial="hidden"
-                      whileInView="visible"
-                      transition={{ delay: idx * 0.1 }}
-                      className="group relative bg-white/90 border border-pink-100 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500"
+                      className="bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all transform hover:-translate-y-2 border-4 border-white"
                     >
-                      <div className="h-52 overflow-hidden">
-                        <img
-                          src={lesson.image}
-                          alt={lesson.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
+                      {/* Lesson Image */}
+                      <div className="h-56 bg-gradient-to-br from-pink-200 to-purple-200 relative overflow-hidden">
+                        {lesson.image ? (
+                          <img
+                            src={lesson.image}
+                            alt={lesson.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <span className="text-9xl">{lesson.emoji}</span>
+                          </div>
+                        )}
+                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-full w-12 h-12 flex items-center justify-center font-black text-xl text-pink-600 shadow-lg">
+                          {lesson.id}
+                        </div>
                       </div>
+
+                      {/* Lesson Info */}
                       <div className="p-6">
-                        <div className="flex justify-between items-center mb-2">
-                          <h3 className="text-lg font-bold text-gray-800">
+                        <div className="flex justify-between items-start mb-3">
+                          <h3 className="text-2xl font-black text-gray-800 flex-1">
                             {lesson.title}
                           </h3>
                           {lesson.completed && (
-                            <div className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
-                              <CheckCircleIcon className="w-3 h-3 mr-1" />
-                              Completed
+                            <div className="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full flex items-center font-bold shadow-md">
+                              <CheckCircleIcon className="w-4 h-4 mr-1" />
+                              Done! 🎉
                             </div>
                           )}
                         </div>
-                        <p className="text-gray-600 mb-4 leading-relaxed">
+                        <p className="text-gray-600 mb-6 text-lg leading-relaxed">
                           {lesson.description}
                         </p>
+
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-500 flex items-center">
-                            <ClockIcon className="w-4 h-4 mr-1" />
+                          <span className="text-base text-gray-500 font-semibold flex items-center">
+                            <ClockIcon className="w-5 h-5 mr-2 text-pink-600" />
                             {lesson.duration}
                           </span>
                           <Link
                             to={`/isl/lesson/${lesson.id}`}
-                            className="bg-gradient-to-r from-pink-500 to-purple-500 hover:scale-105 transition-transform text-white py-2 px-4 rounded-full text-sm font-semibold shadow-md"
+                            className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white py-3 px-6 rounded-full text-base font-bold transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
                           >
-                            Start Lesson
+                            Start Lesson 🚀
                           </Link>
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
               </>
             )}
 
+            {/* Practice Exam Tab */}
             {activeTab === "exam" && (
-              <motion.div
-                variants={fadeIn}
-                initial="hidden"
-                whileInView="visible"
-                transition={{ duration: 0.6 }}
-                className="bg-white/90 border border-blue-100 rounded-3xl shadow-xl p-10 text-center max-w-3xl mx-auto backdrop-blur-lg"
-              >
-                <div className="bg-gradient-to-br from-pink-100 to-blue-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md">
-                  <HandMetalIcon className="w-10 h-10 text-pink-600" />
+              <div className="bg-white rounded-3xl shadow-2xl p-10 border-4 border-pink-100 text-center">
+                <div className="bg-gradient-to-br from-pink-400 to-purple-400 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
+                  <HandMetalIcon className="w-12 h-12 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-3">
-                  ISL Practice Exam
+                <h3 className="text-4xl font-black mb-4 text-gray-800">
+                  ISL Practice Exam 🧠
                 </h3>
-                <p className="text-gray-600 mb-8">
-                  Test your knowledge of Indian Sign Language basics 🧠
+                <p className="text-xl text-gray-600 font-medium mb-10">
+                  Test your knowledge of Indian Sign Language basics!
                 </p>
+
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link
                     to="/isl/exam"
-                    className="bg-gradient-to-r from-pink-500 to-purple-500 hover:scale-105 transition-transform text-white py-3 px-6 rounded-full text-sm font-semibold shadow-md inline-flex items-center justify-center"
+                    className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-black py-4 px-10 rounded-full transition-all inline-flex items-center justify-center text-lg shadow-xl hover:shadow-2xl transform hover:scale-105"
                   >
-                    <HandMetalIcon className="w-5 h-5 mr-2" />
+                    <RocketIcon className="w-6 h-6 mr-2" />
                     Start Practice Exam
                   </Link>
                   <Link
                     to="/review/isl"
-                    className="bg-gradient-to-r from-blue-500 to-purple-500 hover:scale-105 transition-transform text-white py-3 px-6 rounded-full text-sm font-semibold shadow-md inline-flex items-center justify-center"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-black py-4 px-10 rounded-full transition-all inline-flex items-center justify-center text-lg shadow-xl hover:shadow-2xl transform hover:scale-105"
                   >
-                    <BookOpenIcon className="w-5 h-5 mr-2" />
+                    <BookOpenIcon className="w-6 h-6 mr-2" />
                     Review Lessons
                   </Link>
                 </div>
-              </motion.div>
+              </div>
             )}
           </div>
         </section>
 
-        {/* Next Steps */}
-        <section className="py-20 bg-gradient-to-r from-blue-100 via-pink-50 to-purple-100">
-          <div className="container mx-auto px-6 text-center">
-            <motion.h2
-              variants={fadeIn}
-              initial="hidden"
-              whileInView="visible"
-              transition={{ duration: 0.5 }}
-              className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-pink-600 mb-8"
-            >
+        {/* NEXT STEPS SECTION */}
+        <section className="bg-gradient-to-r from-pink-100 via-purple-100 to-blue-100 py-12">
+          <div className="container mx-auto px-4">
+            <h2 className="text-4xl font-black mb-8 text-gray-800 flex items-center">
+              <TrophyIcon className="w-10 h-10 mr-4 text-yellow-500" />
               Keep the Magic Going ✨
-            </motion.h2>
-            <motion.div
-              variants={fadeIn}
-              initial="hidden"
-              whileInView="visible"
-              transition={{ delay: 0.2, duration: 0.6 }}
-              className="bg-white rounded-3xl p-10 shadow-2xl inline-flex flex-col md:flex-row items-center gap-8 border border-pink-100 hover:shadow-pink-200/50 transition-all"
-            >
-              <div className="bg-gradient-to-br from-pink-400 to-purple-400 p-5 rounded-full shadow-md animate-pulse-slow">
-                <StarIcon className="w-8 h-8 text-white" />
+            </h2>
+            <div className="bg-white rounded-3xl shadow-2xl p-8 border-4 border-white">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="bg-gradient-to-br from-pink-500 to-purple-500 p-6 rounded-2xl shadow-xl">
+                  <StarIcon className="w-16 h-16 text-white" />
+                </div>
+                <div className="flex-grow text-center md:text-left">
+                  <h3 className="text-3xl font-black text-gray-800 mb-2">
+                    Continue Learning! 🚀
+                  </h3>
+                  <p className="text-xl text-gray-600 font-medium">
+                    Pick up where you left off with “Alphabet K–T”
+                  </p>
+                </div>
+                <Link
+                  to="/isl/lesson/3"
+                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white py-4 px-8 rounded-full text-lg font-black transition-all shadow-xl hover:shadow-2xl transform hover:scale-105 whitespace-nowrap"
+                >
+                  Continue ✨
+                </Link>
               </div>
-              <div className="text-center md:text-left flex-1">
-                <h3 className="text-xl font-bold text-gray-800">
-                  Continue Learning
-                </h3>
-                <p className="text-gray-600">
-                  Pick up where you left off with <b>“Alphabet K–T”</b>
-                </p>
-              </div>
-              <Link
-                to="/isl/lesson/3"
-                className="bg-gradient-to-r from-pink-500 to-purple-500 hover:scale-105 transition-transform text-white py-3 px-8 rounded-full text-sm font-semibold shadow-md"
-              >
-                Continue
-              </Link>
-            </motion.div>
+            </div>
           </div>
         </section>
       </main>
-
       <Footer />
     </div>
   );
