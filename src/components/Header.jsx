@@ -35,7 +35,7 @@ export function Header() {
     if (!user || !isAuthenticated) return '/Dashboard';
     switch (user.role) {
       case 'student':
-        return '/exam-dashboard'; // Student progress/exam dashboard
+        return `/student/${encodeURIComponent(user.email)}/progress`; // Student progress page
       case 'parent':
         return '/parent-dashboard'; // Parent sees children progress on dashboard
       case 'teacher':

@@ -62,6 +62,11 @@ export function AuthProvider({ children }) {
           fetchUserData(user.role, user.email);
         }
       });
+
+      socketRef.current.on('progressUpdated', (data) => {
+        // Emit custom event for components to listen to
+        window.dispatchEvent(new CustomEvent('progressUpdated', { detail: data }));
+      });
     }
 
     return () => {

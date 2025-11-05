@@ -20,17 +20,37 @@ export function AdminUserManagement() {
   const [filterRole, setFilterRole] = useState('all');
 
   useEffect(() => {
-    // Mock user data
-    const mockUsers = [
-      { id: 1, name: 'Emma Johnson', email: 'emma@example.com', role: 'Student', status: 'Active', joinDate: '2024-01-15' },
-      { id: 2, name: 'Alex Smith', email: 'alex@example.com', role: 'Student', status: 'Active', joinDate: '2024-02-20' },
-      { id: 3, name: 'Sarah Williams', email: 'sarah@example.com', role: 'Teacher', status: 'Active', joinDate: '2024-01-10' },
-      { id: 4, name: 'Michael Brown', email: 'michael@example.com', role: 'Parent', status: 'Active', joinDate: '2024-03-05' },
-      { id: 5, name: 'Jessica Davis', email: 'jessica@example.com', role: 'Student', status: 'Inactive', joinDate: '2024-02-28' },
-      { id: 6, name: 'David Martinez', email: 'david@example.com', role: 'Teacher', status: 'Active', joinDate: '2024-01-25' },
-    ];
-    setUsers(mockUsers);
+    loadUsers();
   }, []);
+
+  const loadUsers = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${API_URL}/api/admin/users`, {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) throw new Error('Failed to fetch users');
+      
+      const usersData = await response.json();
+      
+      // Transform user data to match the UI format
+      const transformedUsers = usersData.map(user => ({
+        id: user._id || user.email,
+        name: user.username || user.name || user.email.split('@')[0],
+        email: user.email,
+        role: user.stakeholder ? user.stakeholder.charAt(0).toUpperCase() + user.stakeholder.slice(1) : 'Student',
+        status: user.loggedIn ? 'Active' : 'Inactive',
+        joinDate: user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'
+      }));
+      
+      setUsers(transformedUsers);
+    } catch (error) {
+      console.error('Error loading users:', error);
+      // Fallback to empty array on error
+      setUsers([]);
+    }
+  };
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 

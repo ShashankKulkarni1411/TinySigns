@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const teacherSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
+  students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
   totalStudents: { type: Number, default: 0 },
   activeToday: { type: Number, default: 0 },
   lessonsCompleted: { type: Number, default: 0 },

@@ -57,17 +57,52 @@ export function ParentDashboard() {
       scale: 0.4 + Math.random() * 0.4
     }));
     setFloatingElements(elements);
+
+    // Listen for real-time progress updates
+    const handleProgressUpdate = (event) => {
+      const { studentEmail } = event.detail;
+      // Reload parent data to get updated progress for any child
+      loadParentData();
+    };
+
+    window.addEventListener('progressUpdated', handleProgressUpdate);
+    return () => {
+      window.removeEventListener('progressUpdated', handleProgressUpdate);
+    };
   }, [user]);
 
   const loadParentData = async () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      
+      // Fetch parent data and children list
       const response = await fetch(`${API_URL}/api/parent/${user.email}`, {
         credentials: 'include'
       });
       if (!response.ok) throw new Error('Failed to fetch parent data');
       const data = await response.json();
       setParentData(data);
+
+      // Fetch child progress summary
+      const progressResponse = await fetch(`${API_URL}/api/parent/child/${encodeURIComponent(user.email)}`, {
+        credentials: 'include'
+      });
+      
+      if (progressResponse.ok) {
+        const progressData = await progressResponse.json();
+        
+        // Update user progress with real data
+        if (progressData.progress) {
+          setUserProgress({
+            progress: progressData.progress.overall || 0,
+            individualProgress: {
+              mathematics: progressData.progress.individualProgress?.mathematics || 0,
+              science: progressData.progress.individualProgress?.science || 0,
+              isl: progressData.progress.individualProgress?.isl || 0
+            }
+          });
+        }
+      }
 
       // Process children data
       if (data.childrenData && data.childrenData.length > 0) {

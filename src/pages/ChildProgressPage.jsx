@@ -47,14 +47,34 @@ export function ChildProgressPage() {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const studentEmail = decodeURIComponent(childId); // Decode URL-encoded email
       
-      // Fetch student data
-      const response = await fetch(`${API_URL}/api/student/${encodeURIComponent(studentEmail)}`, {
-        credentials: 'include'
-      });
-      
-      if (!response.ok) throw new Error('Failed to fetch student data');
-      
-      const studentData = await response.json();
+      // Try parent view progress endpoint first
+      let studentData;
+      try {
+        const progressResponse = await fetch(`${API_URL}/api/parent/view-progress/${encodeURIComponent(studentEmail)}`, {
+          credentials: 'include'
+        });
+        
+        if (progressResponse.ok) {
+          const progressData = await progressResponse.json();
+          studentData = progressData.student;
+        } else {
+          // Fallback to regular student endpoint
+          const response = await fetch(`${API_URL}/api/student/${encodeURIComponent(studentEmail)}`, {
+            credentials: 'include'
+          });
+          
+          if (!response.ok) throw new Error('Failed to fetch student data');
+          studentData = await response.json();
+        }
+      } catch (error) {
+        // Fallback to regular student endpoint
+        const response = await fetch(`${API_URL}/api/student/${encodeURIComponent(studentEmail)}`, {
+          credentials: 'include'
+        });
+        
+        if (!response.ok) throw new Error('Failed to fetch student data');
+        studentData = await response.json();
+      }
       
       // Fetch user info for name
       const userResponse = await fetch(`${API_URL}/api/users/${encodeURIComponent(studentEmail)}`, {

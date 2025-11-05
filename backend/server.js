@@ -333,11 +333,156 @@ app.get('/api/teacher/:email', requireAuth, async (req, res, next) => {
       return res.status(403).json({ message: 'Access denied' });
     }
     
-    let teacher = await Teacher.findOne({ email: req.params.email });
+    let teacher = await Teacher.findOne({ email: req.params.email })
+      .populate('students', 'email numberOfLessonsCompleted averageScore timeSpent');
     if (!teacher) {
       teacher = await Teacher.create({ email: req.params.email });
     }
+    
+    // Calculate stats from populated students
+    if (teacher.students && teacher.students.length > 0) {
+      teacher.totalStudents = teacher.students.length;
+      const totalLessons = teacher.students.reduce((sum, s) => sum + (s.numberOfLessonsCompleted || 0), 0);
+      const totalScores = teacher.students.reduce((sum, s) => sum + (s.averageScore || 0), 0);
+      teacher.lessonsCompleted = totalLessons;
+      teacher.classAverage = teacher.students.length > 0 ? Math.round(totalScores / teacher.students.length) : 0;
+    }
+    
     res.json(teacher);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Get teacher's student progress (for View Progress page)
+app.get('/api/teacher/student/:id/progress', requireRole('teacher'), async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const teacherEmail = req.session.email;
+    
+    // Find student by ID (could be ObjectId or email)
+    let student;
+    try {
+      // Try as ObjectId first
+      student = await Student.findById(id);
+    } catch (e) {
+      // If not ObjectId, try as email
+      student = await Student.findOne({ email: decodeURIComponent(id) });
+    }
+    
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    
+    // Verify teacher has access to this student
+    const teacher = await Teacher.findOne({ email: teacherEmail });
+    if (!teacher || !teacher.students?.some(s => s.toString() === student._id.toString())) {
+      return res.status(403).json({ message: 'Access denied - student not in your class' });
+    }
+    
+    // Get user info for name
+    const user = await User.findOne({ email: student.email, stakeholder: 'student' });
+    
+    const completedLessons = student.numberOfLessonsCompleted || 0;
+    const totalLessons = 12; // 4 per module × 3 modules
+    const percentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+    
+    // Calculate per-module progress
+    const lessonsPerModule = completedLessons / 3;
+    const totalLessonsPerModule = 4;
+    
+    const progress = {
+      isl: {
+        completed: Math.min(Math.floor(lessonsPerModule), totalLessonsPerModule),
+        total: totalLessonsPerModule,
+        score: student.averageScore || 0,
+        needsHelp: (student.averageScore || 0) < 60
+      },
+      mathematics: {
+        completed: Math.min(Math.floor(lessonsPerModule), totalLessonsPerModule),
+        total: totalLessonsPerModule,
+        score: student.averageScore || 0,
+        needsHelp: (student.averageScore || 0) < 60
+      },
+      science: {
+        completed: Math.min(Math.floor(lessonsPerModule), totalLessonsPerModule),
+        total: totalLessonsPerModule,
+        score: student.averageScore || 0,
+        needsHelp: (student.averageScore || 0) < 60
+      }
+    };
+    
+    res.json({
+      name: user?.username || student.email.split('@')[0],
+      email: student.email,
+      grade: 'Student', // Can be enhanced with actual grade field
+      avatar: (user?.username || student.email.split('@')[0]).charAt(0).toUpperCase(),
+      completedLessons: completedLessons,
+      totalLessons: totalLessons,
+      percentage: percentage,
+      marksInExams: student.marksInExams || 0,
+      averageScore: student.averageScore || 0,
+      bestScore: student.bestScore || 0,
+      progress: progress,
+      recentActivity: [
+        { 
+          date: student.updatedAt ? new Date(student.updatedAt).toLocaleString() : 'Recently', 
+          activity: `Completed ${completedLessons} lessons`, 
+          score: student.averageScore || 0 
+        }
+      ]
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Get teacher's students list with details
+app.get('/api/teacher/:email/students', requireAuth, async (req, res, next) => {
+  try {
+    // Check if user can access this teacher's data
+    if (req.session.role !== 'admin' && req.session.email !== req.params.email) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    
+    const teacher = await Teacher.findOne({ email: req.params.email })
+      .populate({
+        path: 'students',
+        select: 'email numberOfLessonsCompleted averageScore timeSpent createdAt updatedAt'
+      });
+    
+    if (!teacher) {
+      return res.json([]);
+    }
+    
+    // Get user data for names
+    const studentEmails = teacher.students.map(s => s.email);
+    const users = await User.find({ email: { $in: studentEmails }, stakeholder: 'student' })
+      .select('email username');
+    
+    // Combine student data with user info
+    const studentsWithDetails = teacher.students.map(student => {
+      const user = users.find(u => u.email === student.email);
+      const completed = student.numberOfLessonsCompleted || 0;
+      const avgScore = student.averageScore || 0;
+      
+      return {
+        id: student._id.toString(),
+        email: student.email,
+        name: user?.username || student.email.split('@')[0],
+        avatar: (user?.username || student.email.split('@')[0]).charAt(0).toUpperCase(),
+        lastActive: student.updatedAt ? new Date(student.updatedAt).toLocaleString() : 'Never',
+        progress: {
+          isl: { completed: Math.floor(completed / 3), total: 4, score: avgScore, needsHelp: avgScore < 60 },
+          mathematics: { completed: Math.floor(completed / 3), total: 4, score: avgScore, needsHelp: avgScore < 60 },
+          science: { completed: Math.floor(completed / 3), total: 4, score: avgScore, needsHelp: avgScore < 60 }
+        },
+        attendance: 85, // Default value, can be calculated from actual data
+        behavior: avgScore >= 80 ? 'Excellent' : avgScore >= 60 ? 'Good' : 'Needs Attention'
+      };
+    });
+    
+    res.json(studentsWithDetails);
   } catch (err) {
     next(err);
   }
@@ -346,19 +491,30 @@ app.get('/api/teacher/:email', requireAuth, async (req, res, next) => {
 // Get all students for teacher to add (only from User collection with role='student')
 app.get('/api/teacher/students/available', requireRole('teacher'), async (req, res, next) => {
   try {
-    // Get students from User collection with role='student' and loggedin=true
+    const teacherEmail = req.session.email;
+    
+    // Get current teacher to check existing students
+    const teacher = await Teacher.findOne({ email: teacherEmail })
+      .populate('students', 'email');
+    const existingStudentEmails = teacher?.students?.map(s => s.email) || [];
+    
+    // Get students from User collection with role='student' (filter out parents and teachers)
     const studentUsers = await User.find({ 
-      stakeholder: 'student', 
-      loggedIn: true 
+      stakeholder: 'student'
     }).select('email username');
     
+    // Filter out students already linked to this teacher
+    const availableStudentUsers = studentUsers.filter(
+      user => !existingStudentEmails.includes(user.email)
+    );
+    
     // Get student data from Student collection
-    const studentEmails = studentUsers.map(u => u.email);
+    const studentEmails = availableStudentUsers.map(u => u.email);
     const studentData = await Student.find({ email: { $in: studentEmails } })
       .select('email parentEmail numberOfLessonsCompleted averageScore');
     
     // Combine user and student data
-    const students = studentUsers.map(user => {
+    const students = availableStudentUsers.map(user => {
       const data = studentData.find(s => s.email === user.email);
       return {
         email: user.email,
@@ -410,14 +566,37 @@ app.post('/api/teacher/add-student', requireRole('teacher'), async (req, res, ne
     const { studentEmail } = req.body;
     const teacherEmail = req.session.email;
 
-    // Get teacher and update totalStudents
+    // Get teacher
     let teacher = await Teacher.findOne({ email: teacherEmail });
     if (!teacher) {
       teacher = await Teacher.create({ email: teacherEmail });
     }
 
-    // Increment totalStudents
-    teacher.totalStudents = (teacher.totalStudents || 0) + 1;
+    // Find student by email
+    let student = await Student.findOne({ email: studentEmail });
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    // Update both sides of the relationship
+    const studentId = student._id;
+    const teacherId = teacher._id;
+
+    // Add student to teacher's students array (avoid duplicates)
+    await Teacher.updateOne(
+      { _id: teacherId },
+      { $addToSet: { students: studentId } }
+    );
+
+    // Set student's teacherId
+    await Student.updateOne(
+      { _id: studentId },
+      { $set: { teacherId: teacherId } }
+    );
+
+    // Refresh teacher data to get updated count
+    teacher = await Teacher.findById(teacherId);
+    teacher.totalStudents = teacher.students ? teacher.students.length : 0;
     await teacher.save();
 
     // Emit Socket.IO event for real-time update
@@ -485,6 +664,15 @@ app.put('/api/teacher/:email', async (req, res, next) => {
 });
 
 // Admin endpoints
+app.get('/api/admin/users', requireRole('admin'), async (req, res, next) => {
+  try {
+    const users = await User.find({}, 'username email stakeholder loggedIn createdAt').sort({ createdAt: -1 });
+    res.json(users);
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.get('/api/admin/:email', requireAuth, async (req, res, next) => {
   try {
     // Only admin can access admin data
@@ -580,6 +768,111 @@ app.post('/api/parent/add-child', requireRole('parent'), async (req, res, next) 
     } else {
       res.status(400).json({ message: 'Child already linked' });
     }
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Get parent's child progress summary
+app.get('/api/parent/child/:parentEmail', requireRole('parent'), async (req, res, next) => {
+  try {
+    const parentEmail = req.session.email;
+    
+    // Verify parent is accessing their own data
+    if (req.params.parentEmail !== parentEmail) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    
+    // Get parent's children
+    const parent = await Parent.findOne({ email: parentEmail });
+    if (!parent || !parent.children || parent.children.length === 0) {
+      return res.json({ progress: null, children: [] });
+    }
+    
+    // Fetch all children's progress data
+    const childrenEmails = parent.children.map(c => c.studentEmail);
+    const students = await Student.find({ email: { $in: childrenEmails } });
+    
+    // Calculate overall progress from all children
+    const totalLessons = 12; // 4 per module (ISL, Math, Science) × 3 modules
+    let totalCompleted = 0;
+    let totalScores = 0;
+    let childrenCount = 0;
+    
+    const childrenProgress = students.map(student => {
+      const completed = student.numberOfLessonsCompleted || 0;
+      const avgScore = student.averageScore || 0;
+      totalCompleted += completed;
+      totalScores += avgScore;
+      childrenCount++;
+      
+      return {
+        email: student.email,
+        completedLessons: completed,
+        averageScore: avgScore,
+        progress: {
+          overall: totalLessons > 0 ? Math.round((completed / totalLessons) * 100) : 0,
+          mathematics: Math.round(((Math.floor(completed / 3) / 4) * 100)),
+          science: Math.round(((Math.floor(completed / 3) / 4) * 100)),
+          isl: Math.round(((Math.floor(completed / 3) / 4) * 100))
+        }
+      };
+    });
+    
+    const overallProgress = totalLessons > 0 ? Math.round((totalCompleted / (childrenCount * totalLessons)) * 100) : 0;
+    const overallAverageScore = childrenCount > 0 ? Math.round(totalScores / childrenCount) : 0;
+    
+    res.json({
+      progress: {
+        overall: overallProgress,
+        individualProgress: {
+          mathematics: childrenProgress.length > 0 ? Math.round(childrenProgress.reduce((sum, c) => sum + c.progress.mathematics, 0) / childrenProgress.length) : 0,
+          science: childrenProgress.length > 0 ? Math.round(childrenProgress.reduce((sum, c) => sum + c.progress.science, 0) / childrenProgress.length) : 0,
+          isl: childrenProgress.length > 0 ? Math.round(childrenProgress.reduce((sum, c) => sum + c.progress.isl, 0) / childrenProgress.length) : 0
+        }
+      },
+      children: childrenProgress
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// View child progress (for parent)
+app.get('/api/parent/view-progress/:studentId', requireRole('parent'), async (req, res, next) => {
+  try {
+    const parentEmail = req.session.email;
+    const studentEmail = decodeURIComponent(req.params.studentId);
+    
+    // Verify parent has access to this student
+    const parent = await Parent.findOne({ email: parentEmail });
+    if (!parent || !parent.children?.some(c => c.studentEmail === studentEmail)) {
+      return res.status(403).json({ message: 'Access denied - student not linked to parent' });
+    }
+    
+    // Fetch student data with progress
+    const student = await Student.findOne({ email: studentEmail });
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    
+    // Get user info for name
+    const user = await User.findOne({ email: studentEmail, stakeholder: 'student' });
+    
+    res.json({
+      student: {
+        email: student.email,
+        name: user?.username || student.email.split('@')[0],
+        numberOfLessonsCompleted: student.numberOfLessonsCompleted || 0,
+        averageScore: student.averageScore || 0,
+        bestScore: student.bestScore || 0,
+        timeSpent: student.timeSpent || 0,
+        totalExams: student.totalExams || 0,
+        marksInExams: student.marksInExams || 0,
+        createdAt: student.createdAt,
+        updatedAt: student.updatedAt
+      }
+    });
   } catch (err) {
     next(err);
   }
@@ -683,6 +976,51 @@ app.get('/api/student/:email/subjects/progress', requireAuth, async (req, res, n
     ];
 
     res.json(subjects);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Update student progress when lesson is completed
+app.post('/api/student/update-progress', requireAuth, async (req, res, next) => {
+  try {
+    const { studentId, subjectId, lessonCompleted } = req.body;
+    const studentEmail = req.session.email;
+    
+    // Verify student can only update their own progress (unless admin)
+    if (req.session.role !== 'admin' && req.session.email !== studentEmail) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    const student = await Student.findOne({ email: studentEmail });
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    // Increment completed lessons if lesson is marked complete
+    if (lessonCompleted) {
+      student.numberOfLessonsCompleted = (student.numberOfLessonsCompleted || 0) + 1;
+    }
+
+    await student.save();
+
+    // Emit Socket.IO events for real-time update to all relevant dashboards
+    io.emit('progressUpdated', { 
+      studentId: student._id.toString(),
+      studentEmail: studentEmail,
+      progress: {
+        numberOfLessonsCompleted: student.numberOfLessonsCompleted,
+        averageScore: student.averageScore
+      }
+    });
+
+    res.json({ 
+      message: 'Progress updated successfully',
+      student: {
+        numberOfLessonsCompleted: student.numberOfLessonsCompleted,
+        averageScore: student.averageScore
+      }
+    });
   } catch (err) {
     next(err);
   }

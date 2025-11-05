@@ -43,6 +43,8 @@ export function TeacherDashboard() {
   const loadTeacherData = async () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      
+      // Fetch teacher data
       const response = await fetch(`${API_URL}/api/teacher/${user.email}`, {
         credentials: 'include'
       });
@@ -58,10 +60,16 @@ export function TeacherDashboard() {
         lessonsCompleted: data.lessonsCompleted || 0,
       });
 
-      // If teacher has students data, process it
-      // Note: You may need to add a separate endpoint to fetch teacher's students
-      // For now, we'll use the stats from teacher data
-      setStudents([]);
+      // Fetch teacher's students list
+      const studentsResponse = await fetch(`${API_URL}/api/teacher/${user.email}/students`, {
+        credentials: 'include'
+      });
+      if (studentsResponse.ok) {
+        const studentsData = await studentsResponse.json();
+        setStudents(studentsData);
+      } else {
+        setStudents([]);
+      }
     } catch (error) {
       console.error('Error loading teacher data:', error);
       setClassStats({
@@ -70,12 +78,14 @@ export function TeacherDashboard() {
         averageScore: 0,
         lessonsCompleted: 0,
       });
+      setStudents([]);
     }
   };
 
   const handleAddStudentSuccess = (data) => {
-    // Refresh teacher data
+    // Refresh teacher data and students list
     loadTeacherData();
+    toast.success('Student added successfully!');
   };
 
   const getProgressColor = (completed, total) => {

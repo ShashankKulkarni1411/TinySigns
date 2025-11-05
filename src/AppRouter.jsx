@@ -35,6 +35,7 @@ import { TeacherStudentProgress } from './pages/TeacherStudentProgress';
 
 import { AddChildPath } from './pages/AddChildPath';
 import { ChildProgressPage } from './pages/ChildProgressPage';
+import { StudentProgressPage } from './pages/StudentProgressPage';
 import { SchedulePage } from './pages/SchedulePage';
 import { MessagesPage } from './pages/MessagesPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -50,6 +51,7 @@ export function AppRouter() {
           
           {/* Protected Routes */}
           <Route path="/home" element={<ProtectedRoute requiredRole="student"><Home /></ProtectedRoute>} />
+          <Route path="/student/:id/progress" element={<ProtectedRoute requiredRole="student"><StudentProgressPage /></ProtectedRoute>} />
           <Route path="/mathematics" element={<ProtectedRoute><MathematicsModule /></ProtectedRoute>} />
           <Route path="/mathematics/exam" element={<ProtectedRoute><MathematicsExam /></ProtectedRoute>} />
           <Route path="/isl" element={<ProtectedRoute><IndianSignLanguage /></ProtectedRoute>} />

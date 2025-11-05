@@ -1,29 +1,60 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { ArrowLeftIcon, TrendingUpIcon, BookOpenIcon, ClockIcon } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 export function TeacherStudentProgress() {
   const navigate = useNavigate();
   const { studentId } = useParams();
+  const { user } = useAuth();
+  const [student, setStudent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock student data
-  const student = {
-    id: studentId,
-    name: 'Emma Johnson',
-    grade: '3rd Grade',
-    avatar: 'E',
-    progress: {
-      isl: { completed: 3, total: 4, score: 85, lessons: ['Basic Greetings', 'Alphabet A-J', 'Alphabet K-T'] },
-      mathematics: { completed: 2, total: 5, score: 78, lessons: ['Counting Numbers 1-5', 'Shapes and Colors'] },
-      science: { completed: 1, total: 3, score: 92, lessons: ['Plants & Trees'] }
-    },
-    recentActivity: [
-      { date: '2 hours ago', activity: 'Completed ISL Alphabet K-T lesson', score: 88 },
-      { date: '1 day ago', activity: 'Completed Math Shapes and Colors lesson', score: 82 },
-      { date: '2 days ago', activity: 'Took Science Plants & Trees exam', score: 92 }
-    ]
+  useEffect(() => {
+    if (studentId) {
+      loadStudentProgress();
+    }
+
+    // Listen for real-time progress updates
+    const handleProgressUpdate = (event) => {
+      const { studentId: updatedStudentId } = event.detail;
+      // If this is the student we're viewing, reload data
+      if (studentId === updatedStudentId || student?.email === event.detail.studentEmail) {
+        loadStudentProgress();
+      }
+    };
+
+    window.addEventListener('progressUpdated', handleProgressUpdate);
+    return () => {
+      window.removeEventListener('progressUpdated', handleProgressUpdate);
+    };
+  }, [studentId]);
+
+  const loadStudentProgress = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      
+      const response = await fetch(`${API_URL}/api/teacher/student/${encodeURIComponent(studentId)}/progress`, {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch student progress');
+      }
+      
+      const data = await response.json();
+      setStudent(data);
+    } catch (error) {
+      console.error('Error loading student progress:', error);
+      setError(error.message || 'Failed to load student progress');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getProgressWidth = (completed, total) => {
@@ -36,6 +67,43 @@ export function TeacherStudentProgress() {
     if (percentage >= 60) return 'bg-yellow-500';
     return 'bg-red-500';
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
+        <Header />
+        <main className="flex-grow py-12 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <div className="text-xl text-gray-600">Loading student progress...</div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !student) {
+    return (
+      <div className="flex flex-col min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
+        <Header />
+        <main className="flex-grow py-12 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-4xl mb-4">😔</div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Failed to load student progress</h2>
+            <p className="text-gray-600 mb-6">{error || 'Student not found'}</p>
+            <button
+              onClick={() => navigate('/teacher-dashboard')}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
@@ -97,15 +165,13 @@ export function TeacherStudentProgress() {
                 </div>
 
                 <div>
-                  <p className="text-sm font-semibold text-gray-600 mb-2">Completed Lessons:</p>
-                  <ul className="space-y-1">
-                    {data.lessons.map((lesson, idx) => (
-                      <li key={idx} className="text-sm text-gray-700 flex items-center">
-                        <span className="text-green-500 mr-2">✓</span>
-                        {lesson}
-                      </li>
-                    ))}
-                  </ul>
+                  <p className="text-sm font-semibold text-gray-600 mb-2">Progress Details:</p>
+                  <p className="text-sm text-gray-700">
+                    {data.completed} of {data.total} lessons completed
+                  </p>
+                  {data.needsHelp && (
+                    <p className="text-xs text-yellow-600 mt-2 font-semibold">⚠️ May need additional support</p>
+                  )}
                 </div>
               </div>
             ))}

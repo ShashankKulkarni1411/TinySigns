@@ -37,6 +37,20 @@ export function Home() {
       scale: 0.4 + Math.random() * 0.4
     }));
     setFloatingElements(elements);
+
+    // Listen for real-time progress updates
+    const handleProgressUpdate = (event) => {
+      const { studentEmail } = event.detail;
+      // If this is the current student, reload data
+      if (user?.email === studentEmail) {
+        loadStudentData();
+      }
+    };
+
+    window.addEventListener('progressUpdated', handleProgressUpdate);
+    return () => {
+      window.removeEventListener('progressUpdated', handleProgressUpdate);
+    };
   }, [isAuthenticated, user]);
 
   const loadStudentData = async () => {
