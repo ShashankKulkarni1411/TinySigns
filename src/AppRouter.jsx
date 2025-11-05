@@ -31,6 +31,13 @@ import { TeacherMessages } from './pages/TeacherMessages';
 import { TeacherReports } from './pages/TeacherReports';
 import { TeacherSettings } from './pages/TeacherSettings';
 import { TeacherStudentProgress } from './pages/TeacherStudentProgress';
+
+import { AddChildPath } from './pages/AddChildPath';
+import { ChildProgressPage } from './pages/ChildProgressPage';
+import { SchedulePage } from './pages/SchedulePage';
+import { MessagesPage } from './pages/MessagesPage';
+import { SettingsPage } from './pages/SettingsPage';
+
 export function AppRouter() {
   return (
     <AuthProvider>
@@ -67,6 +74,11 @@ export function AppRouter() {
           <Route path="/teacher/lesson-plans" element={<TeacherLessonPlans />} />
           <Route path="/teacher/assessments" element={<TeacherAssessments />} />
           <Route path="/teacher/settings" element={<TeacherSettings />} />
+          <Route path="/add-child" element={<AddChildPath />} />
+          <Route path="/child-progress/:childId" element={<ChildProgressPage />} />
+          <Route path="/schedule" element={<SchedulePage />} />
+          <Route path="/messages" element={<MessagesPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

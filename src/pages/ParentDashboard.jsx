@@ -7,13 +7,16 @@ import {
   UsersIcon, 
   BookOpenIcon, 
   BarChartIcon, 
-  ClockIcon,
   TrendingUpIcon,
   CalendarIcon,
   MessageCircleIcon,
-  SettingsIcon
+  SettingsIcon,
+  SparklesIcon,
+  HeartIcon,
+  StarIcon
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 export function ParentDashboard() {
   const { user } = useAuth();
@@ -32,6 +35,7 @@ export function ParentDashboard() {
     totalLessonsCompleted: 0,
     averageScore: 0,
   });
+  const [floatingElements, setFloatingElements] = useState([]);
 
   useEffect(() => {
     // Load user's progress
@@ -39,6 +43,18 @@ export function ParentDashboard() {
       const progress = lessonService.getUserProgress();
       setUserProgress(progress);
     }
+
+    // Generate floating emoji
+    const elements = Array.from({ length: 15 }, (_, i) => ({
+      id: i,
+      emoji: ['👨‍👩‍👧‍👦', '❤️', '⭐', '🎓', '📚', '🏆', '💝', '🌟', '✨', '🎯', '👪', '💫', '🎉', '🌈', '🎊'][i],
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      duration: 25 + Math.random() * 15,
+      delay: Math.random() * 10,
+      scale: 0.4 + Math.random() * 0.4
+    }));
+    setFloatingElements(elements);
 
     // Mock data for children
     const mockChildren = [
@@ -85,7 +101,7 @@ export function ParentDashboard() {
       }, 0);
     }, 0);
 
-    const totalModules = mockChildren.length * 3; // 3 modules per child
+    const totalModules = mockChildren.length * 3;
 
     setOverallStats({
       totalChildren: mockChildren.length,
@@ -93,13 +109,13 @@ export function ParentDashboard() {
       totalLessonsCompleted: totalLessons,
       averageScore: Math.round(totalScores / totalModules),
     });
-  }, []);
+  }, [user]);
 
   const getProgressColor = (completed, total) => {
     const percentage = (completed / total) * 100;
-    if (percentage >= 80) return 'bg-green-500';
-    if (percentage >= 60) return 'bg-yellow-500';
-    return 'bg-red-500';
+    if (percentage >= 80) return 'from-green-400 to-emerald-500';
+    if (percentage >= 60) return 'from-yellow-400 to-orange-500';
+    return 'from-red-400 to-pink-500';
   };
 
   const getProgressWidth = (completed, total) => {
@@ -107,201 +123,286 @@ export function ParentDashboard() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700 text-white relative overflow-hidden">
+      {/* Floating emoji background */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {floatingElements.map((el) => (
+          <motion.div
+            key={el.id}
+            className="absolute text-4xl opacity-15"
+            style={{
+              left: `${el.x}%`,
+              top: `${el.y}%`,
+              fontSize: `${el.scale * 2.5}rem`
+            }}
+            animate={{
+              y: [0, -40, 0],
+              x: [0, 20, 0],
+              rotate: [0, 180, 360],
+              opacity: [0.1, 0.2, 0.1]
+            }}
+            transition={{
+              duration: el.duration,
+              delay: el.delay,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            {el.emoji}
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Animated gradient orbs */}
+      <div className="fixed inset-0 pointer-events-none">
+        <motion.div
+          className="absolute top-20 left-10 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.2, 0.3, 0.2],
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div
+          className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            opacity: [0.2, 0.3, 0.2],
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 5
+          }}
+        />
+      </div>
+
       <Header />
-      <main className="flex-grow p-6">
-        <div className="container mx-auto">
+      
+      <main className="flex-grow relative z-10 p-6">
+        <div className="container mx-auto max-w-7xl">
           {/* Welcome Section */}
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg p-6 text-white mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold mb-2">
-                  Welcome, {user?.name || 'Parent'}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-xl border-2 border-white/30 rounded-3xl p-8 md:p-10 mb-8 shadow-2xl relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-300/10 rounded-full blur-2xl"></div>
+            <div className="flex items-center justify-between flex-wrap gap-6">
+              <div className="relative z-10">
+                <h1 className="text-4xl md:text-5xl font-black mb-3 bg-gradient-to-r from-yellow-200 via-pink-300 to-purple-300 bg-clip-text text-transparent">
+                  Welcome Back, {user?.name || 'Parent'}! 👋
                 </h1>
-                <p className="text-indigo-100">
-                  Monitor your children's learning progress and achievements
+                <p className="text-xl text-white/90 font-medium">
+                  Track your children's amazing learning journey! 🌟
                 </p>
               </div>
-              <div className="bg-white/20 rounded-full p-4">
-                <UsersIcon className="w-12 h-12" />
+              <div className="bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full p-6 shadow-xl">
+                <HeartIcon className="w-12 h-12" />
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* User Progress Section */}
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Your Progress</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-indigo-600">{userProgress.progress}%</div>
-                <div className="text-sm text-gray-600">Overall Progress</div>
+          {/* Your Progress Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.8 }}
+            className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border-2 border-white/20 rounded-3xl p-8 mb-8 shadow-2xl"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="bg-gradient-to-br from-purple-400 to-pink-400 p-3 rounded-2xl">
+                <SparklesIcon className="w-8 h-8" />
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{userProgress.individualProgress.mathematics}%</div>
-                <div className="text-sm text-gray-600">Mathematics</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{userProgress.individualProgress.science}%</div>
-                <div className="text-sm text-gray-600">Science</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-pink-600">{userProgress.individualProgress.isl}%</div>
-                <div className="text-sm text-gray-600">ISL</div>
-              </div>
+              <h2 className="text-3xl font-black">Your Progress ✨</h2>
             </div>
-          </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {[
+                { label: 'Overall', value: userProgress.progress, color: 'from-indigo-400 to-purple-500', emoji: '🎯' },
+                { label: 'Mathematics', value: userProgress.individualProgress.mathematics, color: 'from-blue-400 to-cyan-500', emoji: '➕' },
+                { label: 'Science', value: userProgress.individualProgress.science, color: 'from-green-400 to-emerald-500', emoji: '🔬' },
+                { label: 'ISL', value: userProgress.individualProgress.isl, color: 'from-pink-400 to-rose-500', emoji: '🤟' }
+              ].map((item, idx) => (
+                <div key={idx} className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                  <div className="text-3xl mb-2">{item.emoji}</div>
+                  <div className={`text-4xl font-black mb-2 bg-gradient-to-r ${item.color} bg-clip-text text-transparent`}>
+                    {item.value}%
+                  </div>
+                  <div className="text-sm text-white/80 font-bold">{item.label}</div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
 
           {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="flex items-center">
-                <div className="bg-blue-100 rounded-lg p-3">
-                  <UsersIcon className="w-6 h-6 text-blue-600" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8"
+          >
+            {[
+              { icon: UsersIcon, label: 'Total Children', value: overallStats.totalChildren, color: 'from-blue-400 to-indigo-500', emoji: '👨‍👩‍👧‍👦' },
+              { icon: TrendingUpIcon, label: 'Active Today', value: overallStats.activeChildren, color: 'from-green-400 to-emerald-500', emoji: '🚀' },
+              { icon: BookOpenIcon, label: 'Lessons Done', value: overallStats.totalLessonsCompleted, color: 'from-purple-400 to-pink-500', emoji: '📚' },
+              { icon: StarIcon, label: 'Avg Score', value: `${overallStats.averageScore}%`, color: 'from-yellow-400 to-orange-500', emoji: '⭐' }
+            ].map((stat, idx) => {
+              const Icon = stat.icon;
+              return (
+                <div key={idx} className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border-2 border-white/20 rounded-3xl p-6 shadow-xl relative overflow-hidden">
+                  <div className="absolute top-2 right-2 text-3xl opacity-50">{stat.emoji}</div>
+                  <div className={`bg-gradient-to-br ${stat.color} p-3 rounded-2xl w-fit mb-4 shadow-lg`}>
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <p className="text-sm text-white/80 font-bold mb-1">{stat.label}</p>
+                  <p className="text-3xl font-black">{stat.value}</p>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm text-gray-600">Total Children</p>
-                  <p className="text-2xl font-bold">{overallStats.totalChildren}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="flex items-center">
-                <div className="bg-green-100 rounded-lg p-3">
-                  <TrendingUpIcon className="w-6 h-6 text-green-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm text-gray-600">Active Today</p>
-                  <p className="text-2xl font-bold">{overallStats.activeChildren}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="flex items-center">
-                <div className="bg-purple-100 rounded-lg p-3">
-                  <BookOpenIcon className="w-6 h-6 text-purple-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm text-gray-600">Lessons Completed</p>
-                  <p className="text-2xl font-bold">{overallStats.totalLessonsCompleted}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="flex items-center">
-                <div className="bg-yellow-100 rounded-lg p-3">
-                  <BarChartIcon className="w-6 h-6 text-yellow-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm text-gray-600">Average Score</p>
-                  <p className="text-2xl font-bold">{overallStats.averageScore}%</p>
-                </div>
-              </div>
-            </div>
-          </div>
+              );
+            })}
+          </motion.div>
 
           {/* Children List */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Your Children</h2>
-              <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors">
-                Add Child
-              </button>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.8 }}
+            className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border-2 border-white/20 rounded-3xl p-8 mb-8 shadow-2xl"
+          >
+            <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-gradient-to-br from-pink-400 to-purple-500 p-3 rounded-2xl">
+                  <UsersIcon className="w-8 h-8" />
+                </div>
+                <h2 className="text-3xl font-black">Your Amazing Kids! 🎉</h2>
+              </div>
+              <Link
+                to="/add-child"
+                className="bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-300 hover:to-orange-300 text-gray-900 font-black px-6 py-3 rounded-full transition-all shadow-lg hover:shadow-2xl transform hover:scale-105"
+              >
+                + Add Child
+              </Link>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               {children.map((child) => (
-                <div key={child.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="bg-indigo-100 rounded-full w-12 h-12 flex items-center justify-center mr-4">
-                        <span className="text-indigo-600 font-bold text-lg">{child.avatar}</span>
+                <div key={child.id} className="bg-white/10 backdrop-blur-md border-2 border-white/20 rounded-3xl p-6 hover:bg-white/15 transition-all shadow-lg">
+                  <div className="flex items-center justify-between flex-wrap gap-6 mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full w-16 h-16 flex items-center justify-center shadow-xl border-2 border-white/30">
+                        <span className="text-white font-black text-2xl">{child.avatar}</span>
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-800">{child.name}</h3>
-                        <p className="text-gray-600">{child.grade} • Age {child.age}</p>
-                        <p className="text-sm text-gray-500">Last active: {child.lastActive}</p>
+                        <h3 className="text-2xl font-black mb-1">{child.name}</h3>
+                        <p className="text-white/80 font-medium">{child.grade} • Age {child.age}</p>
+                        <p className="text-sm text-white/60 font-medium">🕐 Last active: {child.lastActive}</p>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center gap-3">
                       <Link
                         to={`/child-progress/${child.id}`}
-                        className="bg-blue-100 hover:bg-blue-200 text-blue-600 px-4 py-2 rounded-lg transition-colors"
+                        className="bg-gradient-to-r from-blue-400 to-cyan-400 hover:from-blue-300 hover:to-cyan-300 text-white font-black px-6 py-3 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
                       >
-                        View Progress
+                        View Progress 📊
                       </Link>
-                      <button className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg transition-colors">
-                        <MessageCircleIcon className="w-4 h-4" />
+                      <button className="bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-all border-2 border-white/30">
+                        <MessageCircleIcon className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
 
                   {/* Progress Bars */}
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {Object.entries(child.progress).map(([module, data]) => (
-                      <div key={module} className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium text-gray-700 capitalize">
-                            {module === 'isl' ? 'ISL' : module}
-                          </span>
-                          <span className="text-sm text-gray-600">
-                            {data.completed}/{data.total}
-                          </span>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {Object.entries(child.progress).map(([module, data]) => {
+                      const moduleEmoji = module === 'isl' ? '🤟' : module === 'mathematics' ? '➕' : '🔬';
+                      return (
+                        <div key={module} className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
+                          <div className="flex justify-between items-center mb-3">
+                            <span className="text-sm font-black capitalize flex items-center gap-2">
+                              {moduleEmoji} {module === 'isl' ? 'ISL' : module}
+                            </span>
+                            <span className="text-sm font-bold text-white/80">
+                              {data.completed}/{data.total}
+                            </span>
+                          </div>
+                          <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
+                            <div
+                              className={`h-3 rounded-full bg-gradient-to-r ${getProgressColor(data.completed, data.total)} shadow-lg`}
+                              style={{ width: `${getProgressWidth(data.completed, data.total)}%` }}
+                            ></div>
+                          </div>
+                          <p className="text-xs text-white/70 mt-2 font-bold">Score: {data.score}% ⭐</p>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full ${getProgressColor(data.completed, data.total)}`}
-                            style={{ width: `${getProgressWidth(data.completed, data.total)}%` }}
-                          ></div>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">Score: {data.score}%</p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Quick Actions */}
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="flex items-center mb-4">
-                <CalendarIcon className="w-6 h-6 text-indigo-600 mr-3" />
-                <h3 className="text-lg font-semibold">Schedule</h3>
-              </div>
-              <p className="text-gray-600 mb-4">View and manage your children's learning schedule</p>
-              <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors">
-                View Schedule
-              </button>
-            </div>
-
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="flex items-center mb-4">
-                <MessageCircleIcon className="w-6 h-6 text-green-600 mr-3" />
-                <h3 className="text-lg font-semibold">Communicate</h3>
-              </div>
-              <p className="text-gray-600 mb-4">Message teachers and get updates</p>
-              <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
-                Open Messages
-              </button>
-            </div>
-
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="flex items-center mb-4">
-                <SettingsIcon className="w-6 h-6 text-gray-600 mr-3" />
-                <h3 className="text-lg font-semibold">Settings</h3>
-              </div>
-              <p className="text-gray-600 mb-4">Manage account and notification preferences</p>
-              <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
-                Account Settings
-              </button>
-            </div>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
+            {[
+              {
+                icon: CalendarIcon,
+                title: 'Schedule',
+                desc: 'Manage learning schedules',
+                color: 'from-indigo-500 to-purple-500',
+                emoji: '📅',
+                link: '/schedule'
+              },
+              {
+                icon: MessageCircleIcon,
+                title: 'Messages',
+                desc: 'Chat with teachers',
+                color: 'from-green-500 to-emerald-500',
+                emoji: '💬',
+                link: '/messages'
+              },
+              {
+                icon: SettingsIcon,
+                title: 'Settings',
+                desc: 'Account preferences',
+                color: 'from-pink-500 to-rose-500',
+                emoji: '⚙️',
+                link: '/settings'
+              }
+            ].map((action, idx) => {
+              const Icon = action.icon;
+              return (
+                <div key={idx} className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border-2 border-white/20 rounded-3xl p-8 shadow-2xl relative overflow-hidden group hover:scale-105 transition-transform">
+                  <div className="absolute top-4 right-4 text-4xl opacity-50 group-hover:scale-110 transition-transform">
+                    {action.emoji}
+                  </div>
+                  <div className={`bg-gradient-to-br ${action.color} p-4 rounded-2xl w-fit mb-4 shadow-lg`}>
+                    <Icon className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-2xl font-black mb-3">{action.title}</h3>
+                  <p className="text-white/80 mb-6 font-medium">{action.desc}</p>
+                  <Link
+                    to={action.link}
+                    className="inline-block bg-white/20 hover:bg-white/30 text-white font-black px-6 py-3 rounded-full transition-all border-2 border-white/30"
+                  >
+                    Open →
+                  </Link>
+                </div>
+              );
+            })}
+          </motion.div>
         </div>
       </main>
+      
       <Footer />
     </div>
   );
