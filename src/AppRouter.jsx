@@ -24,7 +24,13 @@ import { AdminSettings } from './pages/AdminSettings';
 import { AdminDatabase } from './pages/AdminDatabase';
 import { AdminSecurity } from './pages/AdminSecurity';
 import { AdminMonitoring } from './pages/AdminMonitoring';
-
+import { TeacherAddStudent } from './pages/TeacherAddStudent';
+import { TeacherAssessments } from './pages/TeacherAssessments';
+import { TeacherLessonPlans } from './pages/TeacherLessonPlans';
+import { TeacherMessages } from './pages/TeacherMessages';
+import { TeacherReports } from './pages/TeacherReports';
+import { TeacherSettings } from './pages/TeacherSettings';
+import { TeacherStudentProgress } from './pages/TeacherStudentProgress';
 export function AppRouter() {
   return (
     <AuthProvider>
@@ -53,6 +59,14 @@ export function AppRouter() {
           <Route path="/admin/database" element={<AdminDatabase />} />
           <Route path="/admin/security" element={<AdminSecurity />} />
           <Route path="/admin/monitoring" element={<AdminMonitoring />} />
+          <Route path="/teacher/add-student" element={<TeacherAddStudent />} />
+          <Route path="/teacher/reports" element={<TeacherReports />} />
+          <Route path="/teacher/student-progress/:studentId" element={<TeacherStudentProgress />} />
+          <Route path="/teacher/messages" element={<TeacherMessages />} />
+          <Route path="/teacher/messages/:studentId" element={<TeacherMessages />} />
+          <Route path="/teacher/lesson-plans" element={<TeacherLessonPlans />} />
+          <Route path="/teacher/assessments" element={<TeacherAssessments />} />
+          <Route path="/teacher/settings" element={<TeacherSettings />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
