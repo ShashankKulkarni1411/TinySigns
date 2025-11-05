@@ -32,9 +32,9 @@ export function Login() {
       setLoading(true);
       setError('');
 
-      // Check if user exists in mock API
+      // Fetch users from backend
       const response = await fetch(
-        'https://68e5648d21dd31f22cc1a1d6.mockapi.io/api/users'
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users`
       );
 
       if (!response.ok) throw new Error('Failed to fetch users');
@@ -64,7 +64,7 @@ export function Login() {
       await login(userWithProgress);
       
       // Navigate based on user role (LandingPage is only for first visit)
-      switch (user.role) {
+      switch (user.stakeholder || 'student') {
         case 'student':
           navigate('/home');
           break;

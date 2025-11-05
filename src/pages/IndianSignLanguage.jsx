@@ -16,14 +16,29 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ProgressBar } from "../components/progress/ProgressBar";
+import { fetchVideos } from "../services/videoApi";
 
 export function IndianSignLanguage() {
   const [activeTab, setActiveTab] = useState("lessons");
   const [moduleStats, setModuleStats] = useState(null);
+  const [dbVideos, setDbVideos] = useState([]);
+  const [videosError, setVideosError] = useState("");
 
   useEffect(() => {
     const stats = lessonService.getModuleStats("Indian Sign Language", 4);
     setModuleStats(stats);
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchVideos()
+      .then((data) => {
+        if (isMounted) setDbVideos(data);
+      })
+      .catch(() => {
+        if (isMounted) setVideosError("Could not load videos from server");
+      });
+    return () => { isMounted = false; };
   }, []);
 
   const lessons = [
@@ -277,6 +292,38 @@ export function IndianSignLanguage() {
                     Review Lessons
                   </Link>
                 </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* BACKEND VIDEOS REFLECTION */}
+        <section className="py-8">
+          <div className="container mx-auto px-4">
+            <h3 className="text-2xl font-black text-gray-800 mb-4 flex items-center gap-2">
+              <SparklesIcon className="w-7 h-7 text-pink-600" /> Videos from Database
+            </h3>
+            {videosError && (
+              <div className="bg-red-100 text-red-700 px-4 py-3 rounded-xl mb-4 font-semibold">
+                {videosError}
+              </div>
+            )}
+            {dbVideos.length === 0 && !videosError ? (
+              <p className="text-gray-600">No videos found yet. Add one via Postman to /api/videos.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {dbVideos.map((v) => (
+                  <div key={v._id} className="bg-white rounded-2xl p-5 shadow-md border border-pink-100">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-bold text-gray-800 truncate pr-3">{v.title}</h4>
+                      <span className="text-xs text-gray-500">{new Date(v.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <p className="text-sm text-gray-600 line-clamp-2 mb-3">{v.description}</p>
+                    <a href={v.url} target="_blank" rel="noreferrer" className="inline-flex items-center text-pink-600 font-semibold hover:underline">
+                      Open video
+                    </a>
+                  </div>
+                ))}
               </div>
             )}
           </div>

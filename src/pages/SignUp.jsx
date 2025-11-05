@@ -57,22 +57,15 @@ export function SignUp() {
       setError('');
 
       const response = await fetch(
-        'https://68e5648d21dd31f22cc1a1d6.mockapi.io/api/users',
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            name: formData.name,
+            username: formData.name,
             email: formData.email,
             password: formData.password,
-            role: formData.role,
-            avatar: formData.avatar,
-            progress: 0,
-            individualProgress: {
-              mathematics: 0,
-              science: 0,
-              isl: 0
-            }
+            stakeholder: formData.role
           }),
         }
       );
