@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { useParams, Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import {
   ArrowLeftIcon,
@@ -15,8 +16,10 @@ import {
 } from 'lucide-react';
 
 export function ChildProgressPage() {
-  const { childId } = useParams();
+  const { childId } = useParams(); // childId is the student email (URL encoded)
+  const { user } = useAuth();
   const [childData, setChildData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [floatingElements, setFloatingElements] = useState([]);
 
   useEffect(() => {
@@ -32,63 +35,99 @@ export function ChildProgressPage() {
     }));
     setFloatingElements(elements);
 
-    // Mock child data
-    const mockChildren = {
-      1: {
-        id: 1,
-        name: 'Emma Johnson',
-        age: 8,
-        grade: '3rd Grade',
-        avatar: 'E',
-        joinDate: 'January 2025',
-        totalHours: 45,
-        progress: {
-          isl: { completed: 3, total: 4, score: 85, timeSpent: 15 },
-          mathematics: { completed: 2, total: 5, score: 78, timeSpent: 18 },
-          science: { completed: 1, total: 3, score: 92, timeSpent: 12 }
-        },
-        recentActivity: [
-          { date: '2 hours ago', activity: 'Completed ISL Lesson 3', score: 88 },
-          { date: '1 day ago', activity: 'Practiced Mathematics', score: 75 },
-          { date: '3 days ago', activity: 'Completed Science Lesson 1', score: 92 }
-        ],
-        achievements: [
-          { title: 'First Lesson', icon: '🎯', date: 'Jan 15, 2025' },
-          { title: 'Perfect Score', icon: '💯', date: 'Jan 20, 2025' },
-          { title: 'Week Streak', icon: '🔥', date: 'Jan 22, 2025' }
-        ]
-      },
-      2: {
-        id: 2,
-        name: 'Alex Johnson',
-        age: 10,
-        grade: '5th Grade',
-        avatar: 'A',
-        joinDate: 'December 2024',
-        totalHours: 62,
-        progress: {
-          isl: { completed: 4, total: 4, score: 95, timeSpent: 20 },
-          mathematics: { completed: 4, total: 5, score: 88, timeSpent: 24 },
-          science: { completed: 2, total: 3, score: 85, timeSpent: 18 }
-        },
-        recentActivity: [
-          { date: '1 day ago', activity: 'Completed ISL Module', score: 95 },
-          { date: '2 days ago', activity: 'Mathematics Practice', score: 90 },
-          { date: '4 days ago', activity: 'Science Quiz', score: 85 }
-        ],
-        achievements: [
-          { title: 'Module Master', icon: '🏆', date: 'Jan 10, 2025' },
-          { title: 'Quick Learner', icon: '⚡', date: 'Jan 18, 2025' },
-          { title: 'Top Scorer', icon: '⭐', date: 'Jan 25, 2025' }
-        ]
-      }
-    };
-
-    setChildData(mockChildren[childId]);
+    // Fetch real child data from database
+    if (childId) {
+      loadChildData();
+    }
   }, [childId]);
 
-  if (!childData) {
-    return <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700 text-white text-2xl">Loading...</div>;
+  const loadChildData = async () => {
+    try {
+      setLoading(true);
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const studentEmail = decodeURIComponent(childId); // Decode URL-encoded email
+      
+      // Fetch student data
+      const response = await fetch(`${API_URL}/api/student/${encodeURIComponent(studentEmail)}`, {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) throw new Error('Failed to fetch student data');
+      
+      const studentData = await response.json();
+      
+      // Fetch user info for name
+      const userResponse = await fetch(`${API_URL}/api/users/${encodeURIComponent(studentEmail)}`, {
+        credentials: 'include'
+      });
+      const userData = userResponse.ok ? await userResponse.json() : null;
+      
+      // Calculate progress from student data
+      const totalLessons = 12; // 4 per module (ISL, Math, Science)
+      const completedLessons = studentData.numberOfLessonsCompleted || 0;
+      
+      // Calculate per-module progress (distribute evenly)
+      const lessonsPerModule = completedLessons / 3;
+      const moduleProgress = {
+        isl: {
+          completed: Math.min(Math.floor(lessonsPerModule), 4),
+          total: 4,
+          score: studentData.averageScore || 0,
+          timeSpent: Math.floor((studentData.timeSpent || 0) / 3)
+        },
+        mathematics: {
+          completed: Math.min(Math.floor(lessonsPerModule), 4),
+          total: 4,
+          score: studentData.averageScore || 0,
+          timeSpent: Math.floor((studentData.timeSpent || 0) / 3)
+        },
+        science: {
+          completed: Math.min(Math.floor(lessonsPerModule), 4),
+          total: 4,
+          score: studentData.averageScore || 0,
+          timeSpent: Math.floor((studentData.timeSpent || 0) / 3)
+        }
+      };
+      
+      // Format student data
+      const name = userData?.username || studentEmail.split('@')[0] || 'Student';
+      const avatar = name.charAt(0).toUpperCase();
+      const createdAt = studentData.createdAt ? new Date(studentData.createdAt) : new Date();
+      const joinDate = createdAt.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      
+      setChildData({
+        id: studentEmail,
+        name: name,
+        email: studentEmail,
+        avatar: avatar,
+        joinDate: joinDate,
+        totalHours: Math.floor((studentData.timeSpent || 0) / 60),
+        progress: moduleProgress,
+        recentActivity: [
+          { date: 'Recently', activity: `Completed ${completedLessons} lessons`, score: studentData.averageScore || 0 }
+        ],
+        achievements: studentData.totalExams > 0 ? [
+          { title: 'First Exam', icon: '🎯', date: joinDate },
+          ...(studentData.bestScore >= 80 ? [{ title: 'High Achiever', icon: '💯', date: joinDate }] : []),
+          ...(completedLessons >= 5 ? [{ title: 'Dedicated Learner', icon: '🔥', date: joinDate }] : [])
+        ] : []
+      });
+    } catch (error) {
+      console.error('Error loading child data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading || !childData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700 text-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <div className="text-2xl">Loading progress...</div>
+        </div>
+      </div>
+    );
   }
 
   const getProgressColor = (completed, total) => {
@@ -183,7 +222,7 @@ export function ChildProgressPage() {
                   {childData.name}'s Progress 🌟
                 </h1>
                 <p className="text-xl text-white/90 font-medium mb-2">
-                  {childData.grade} • Age {childData.age}
+                  Student • {childData.email}
                 </p>
                 <p className="text-white/70 font-medium">📅 Member since {childData.joinDate}</p>
               </div>

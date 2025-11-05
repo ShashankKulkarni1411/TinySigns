@@ -30,6 +30,23 @@ export function Header() {
     }
   };
 
+  // ✅ Get progress page path based on user role
+  const getProgressPath = () => {
+    if (!user || !isAuthenticated) return '/Dashboard';
+    switch (user.role) {
+      case 'student':
+        return '/exam-dashboard'; // Student progress/exam dashboard
+      case 'parent':
+        return '/parent-dashboard'; // Parent sees children progress on dashboard
+      case 'teacher':
+        return '/teacher-dashboard'; // Teacher sees class progress on dashboard
+      case 'admin':
+        return '/admin-dashboard'; // Admin sees system progress on dashboard
+      default:
+        return '/Dashboard';
+    }
+  };
+
   return (
     <header className="bg-indigo-600 text-white p-4 shadow-md">
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
@@ -51,7 +68,10 @@ export function Header() {
 
           
 
-            <Link to="/Dashboard" className="flex items-center hover:bg-indigo-700 px-3 py-2 rounded-lg transition-colors">
+            <Link 
+              to={getProgressPath()} 
+              className="flex items-center hover:bg-indigo-700 px-3 py-2 rounded-lg transition-colors"
+            >
               <BarChartIcon className="w-5 h-5 mr-1" />
               <span>Progress</span>
             </Link>

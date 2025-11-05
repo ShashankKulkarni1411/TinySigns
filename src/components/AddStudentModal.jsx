@@ -78,8 +78,11 @@ export function AddStudentModal({ isOpen, onClose, onSuccess }) {
                 className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
               >
                 <div>
-                  <p className="font-semibold text-gray-800">{student.email}</p>
+                  <p className="font-semibold text-gray-800">{student.name || student.email}</p>
                   <p className="text-sm text-gray-500">
+                    {student.email}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
                     Lessons: {student.numberOfLessonsCompleted || 0} | 
                     Avg Score: {student.averageScore || 0}%
                   </p>

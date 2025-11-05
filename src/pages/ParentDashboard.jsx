@@ -77,7 +77,7 @@ export function ParentDashboard() {
             const completed = child.numberOfLessonsCompleted || 0;
             const avgScore = child.averageScore || 0;
             return {
-              id: index + 1,
+              id: child.email, // Use email as ID for routing
               email: child.email,
               name: child.email.split('@')[0] || 'Child',
               avatar: child.email.charAt(0).toUpperCase(),
@@ -334,7 +334,7 @@ export function ParentDashboard() {
                     </div>
                     <div className="flex items-center gap-3">
                       <Link
-                        to={`/child-progress/${child.id}`}
+                        to={`/child-progress/${encodeURIComponent(child.email)}`}
                         className="bg-gradient-to-r from-blue-400 to-cyan-400 hover:from-blue-300 hover:to-cyan-300 text-white font-black px-6 py-3 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
                       >
                         View Progress 📊

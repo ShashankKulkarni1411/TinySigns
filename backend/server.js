@@ -632,6 +632,62 @@ app.get('/api/student/progress/:email', requireAuth, async (req, res, next) => {
   }
 });
 
+// Get per-subject progress for a student
+app.get('/api/student/:email/subjects/progress', requireAuth, async (req, res, next) => {
+  try {
+    // Check if user can access this student's data
+    if (req.session.role !== 'admin' && req.session.email !== req.params.email) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    const student = await Student.findOne({ email: req.params.email });
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    const completedLessons = student.numberOfLessonsCompleted || 0;
+    const lessonsPerModule = completedLessons / 3; // Distribute across 3 modules
+    const totalLessonsPerModule = 4; // Each module has 4 lessons
+
+    const subjects = [
+      {
+        name: 'Indian Sign Language',
+        module: 'isl',
+        completedLessons: Math.min(Math.floor(lessonsPerModule), totalLessonsPerModule),
+        totalLessons: totalLessonsPerModule,
+        percentage: totalLessonsPerModule > 0 
+          ? Math.round((Math.min(Math.floor(lessonsPerModule), totalLessonsPerModule) / totalLessonsPerModule) * 100) 
+          : 0,
+        averageScore: student.averageScore || 0
+      },
+      {
+        name: 'Mathematics',
+        module: 'mathematics',
+        completedLessons: Math.min(Math.floor(lessonsPerModule), totalLessonsPerModule),
+        totalLessons: totalLessonsPerModule,
+        percentage: totalLessonsPerModule > 0 
+          ? Math.round((Math.min(Math.floor(lessonsPerModule), totalLessonsPerModule) / totalLessonsPerModule) * 100) 
+          : 0,
+        averageScore: student.averageScore || 0
+      },
+      {
+        name: 'Science',
+        module: 'science',
+        completedLessons: Math.min(Math.floor(lessonsPerModule), totalLessonsPerModule),
+        totalLessons: totalLessonsPerModule,
+        percentage: totalLessonsPerModule > 0 
+          ? Math.round((Math.min(Math.floor(lessonsPerModule), totalLessonsPerModule) / totalLessonsPerModule) * 100) 
+          : 0,
+        averageScore: student.averageScore || 0
+      }
+    ];
+
+    res.json(subjects);
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.put('/api/parent/:email', async (req, res, next) => {
   try {
     let parent = await Parent.findOneAndUpdate(
