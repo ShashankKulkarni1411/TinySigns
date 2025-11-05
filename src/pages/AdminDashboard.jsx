@@ -20,6 +20,7 @@ import { Link } from 'react-router-dom';
 
 export function AdminDashboard() {
   const { user } = useAuth();
+  const [adminData, setAdminData] = useState(null);
   const [systemStats, setSystemStats] = useState({
     totalUsers: 0,
     activeUsers: 0,
@@ -30,72 +31,76 @@ export function AdminDashboard() {
   const [systemAlerts, setSystemAlerts] = useState([]);
 
   useEffect(() => {
-    // Mock system stats
-    setSystemStats({
-      totalUsers: 1247,
-      activeUsers: 892,
-      totalLessons: 156,
-      systemHealth: 98,
-    });
+    if (user && user.email) {
+      loadAdminData();
+    }
+  }, [user]);
 
-    // Mock recent activity
-    const mockActivity = [
-      {
-        id: 1,
-        type: 'user_registration',
-        message: 'New student registered: Emma Johnson',
-        timestamp: '2 minutes ago',
-        icon: UsersIcon,
-        color: 'text-blue-600'
-      },
-      {
-        id: 2,
-        type: 'lesson_completion',
-        message: 'Alex completed Mathematics Lesson 3',
-        timestamp: '5 minutes ago',
-        icon: BookOpenIcon,
-        color: 'text-green-600'
-      },
-      {
-        id: 3,
-        type: 'system_update',
-        message: 'System backup completed successfully',
-        timestamp: '1 hour ago',
-        icon: DatabaseIcon,
-        color: 'text-purple-600'
-      },
-      {
-        id: 4,
-        type: 'alert',
-        message: 'High server load detected',
-        timestamp: '2 hours ago',
-        icon: AlertTriangleIcon,
-        color: 'text-yellow-600'
+  const loadAdminData = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${API_URL}/api/admin/${user.email}`);
+      if (!response.ok) throw new Error('Failed to fetch admin data');
+      const data = await response.json();
+      setAdminData(data);
+
+      // Set system stats from admin data
+      const totalUsers = (data.totalUsers?.students || 0) + (data.totalUsers?.teachers || 0);
+      setSystemStats({
+        totalUsers: totalUsers || 0,
+        activeUsers: data.totalUsers?.activeUsers || 0,
+        totalLessons: data.totalLessons || 0,
+        systemHealth: data.systemHealth || 100,
+      });
+
+      // Process recent activity
+      if (data.recentActivity && Array.isArray(data.recentActivity)) {
+        const processedActivity = data.recentActivity.slice(0, 10).map((activity, index) => {
+          const iconMap = {
+            user_registration: UsersIcon,
+            lesson_completion: BookOpenIcon,
+            system_update: DatabaseIcon,
+            alert: AlertTriangleIcon,
+          };
+          return {
+            id: index + 1,
+            type: activity.type || 'info',
+            message: activity.message || activity.text || 'Activity',
+            timestamp: activity.timestamp || activity.createdAt || 'Recently',
+            icon: iconMap[activity.type] || ActivityIcon,
+            color: activity.color || 'text-gray-600'
+          };
+        });
+        setRecentActivity(processedActivity);
+      } else {
+        setRecentActivity([]);
       }
-    ];
 
-    setRecentActivity(mockActivity);
-
-    // Mock system alerts
-    const mockAlerts = [
-      {
-        id: 1,
-        type: 'warning',
-        title: 'Server Load High',
-        message: 'Server load is at 85%. Consider scaling resources.',
-        timestamp: '2 hours ago'
-      },
-      {
-        id: 2,
-        type: 'info',
-        title: 'Backup Completed',
-        message: 'Daily backup completed successfully at 3:00 AM.',
-        timestamp: '6 hours ago'
+      // Process system alerts
+      if (data.systemAlerts && Array.isArray(data.systemAlerts)) {
+        const processedAlerts = data.systemAlerts.slice(0, 5).map((alert, index) => ({
+          id: index + 1,
+          type: alert.type || 'info',
+          title: alert.title || 'Alert',
+          message: alert.message || alert.text || '',
+          timestamp: alert.timestamp || alert.createdAt || 'Recently'
+        }));
+        setSystemAlerts(processedAlerts);
+      } else {
+        setSystemAlerts([]);
       }
-    ];
-
-    setSystemAlerts(mockAlerts);
-  }, []);
+    } catch (error) {
+      console.error('Error loading admin data:', error);
+      setSystemStats({
+        totalUsers: 0,
+        activeUsers: 0,
+        totalLessons: 0,
+        systemHealth: 100,
+      });
+      setRecentActivity([]);
+      setSystemAlerts([]);
+    }
+  };
 
   const getAlertColor = (type) => {
     switch (type) {

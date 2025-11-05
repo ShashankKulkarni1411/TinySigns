@@ -51,7 +51,7 @@ export function AdminSecurity() {
         <div className="container mx-auto max-w-6xl">
           {/* Header */}
           <div className="mb-8">
-            <Link to="/admin" className="inline-flex items-center text-yellow-300 hover:text-yellow-200 mb-4 font-bold">
+            <Link to="/admin-dashboard" className="inline-flex items-center text-yellow-300 hover:text-yellow-200 mb-4 font-bold">
               <ArrowLeftIcon className="w-5 h-5 mr-2" />
               Back to Dashboard
             </Link>

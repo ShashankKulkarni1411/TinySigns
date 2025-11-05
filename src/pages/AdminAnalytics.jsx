@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { 
   BarChartIcon, 
   TrendingUpIcon, 
@@ -14,25 +15,59 @@ import {
 } from 'lucide-react';
 
 export function AdminAnalytics() {
+  const { user } = useAuth();
   const [timeRange, setTimeRange] = useState('7days');
-
-  const analyticsData = {
-    userGrowth: [
-      { period: 'Week 1', users: 150 },
-      { period: 'Week 2', users: 220 },
-      { period: 'Week 3', users: 350 },
-      { period: 'Week 4', users: 480 },
-    ],
-    modulePopularity: [
-      { name: 'Indian Sign Language', completions: 450, color: 'from-pink-500 to-red-500' },
-      { name: 'Mathematics', completions: 380, color: 'from-blue-500 to-purple-500' },
-      { name: 'Science', completions: 320, color: 'from-green-500 to-teal-500' },
-    ],
+  const [adminData, setAdminData] = useState(null);
+  const [analyticsData, setAnalyticsData] = useState({
+    userGrowth: [],
+    modulePopularity: [],
     engagementMetrics: {
-      avgSessionTime: '24 mins',
-      completionRate: '78%',
-      activeUsers: 892,
-      totalLessons: 1247
+      avgSessionTime: '0 mins',
+      completionRate: '0%',
+      activeUsers: 0,
+      totalLessons: 0
+    }
+  });
+
+  useEffect(() => {
+    if (user && user.email) {
+      loadAdminData();
+    }
+  }, [user]);
+
+  const loadAdminData = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${API_URL}/api/admin/${user.email}`);
+      if (!response.ok) throw new Error('Failed to fetch admin data');
+      const data = await response.json();
+      setAdminData(data);
+
+      // Process analytics data
+      const analytics = data.analytics || {};
+      const modulePop = analytics.modulePopularity || {};
+      
+      setAnalyticsData({
+        userGrowth: [
+          { period: 'Week 1', users: Math.floor((analytics.userGrowth || 0) * 0.3) },
+          { period: 'Week 2', users: Math.floor((analytics.userGrowth || 0) * 0.5) },
+          { period: 'Week 3', users: Math.floor((analytics.userGrowth || 0) * 0.75) },
+          { period: 'Week 4', users: analytics.userGrowth || 0 },
+        ],
+        modulePopularity: [
+          { name: 'Indian Sign Language', completions: modulePop.isl || 0, color: 'from-pink-500 to-red-500' },
+          { name: 'Mathematics', completions: modulePop.mathematics || 0, color: 'from-blue-500 to-purple-500' },
+          { name: 'Science', completions: modulePop.science || 0, color: 'from-green-500 to-teal-500' },
+        ],
+        engagementMetrics: {
+          avgSessionTime: `${analytics.avgSessionTime || 0} mins`,
+          completionRate: `${analytics.completionRate || 0}%`,
+          activeUsers: analytics.activeUsers || 0,
+          totalLessons: analytics.lessonsCompleted || 0
+        }
+      });
+    } catch (error) {
+      console.error('Error loading admin analytics:', error);
     }
   };
 
@@ -43,7 +78,7 @@ export function AdminAnalytics() {
         <div className="container mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <Link to="/admin" className="inline-flex items-center text-yellow-300 hover:text-yellow-200 mb-4 font-bold">
+            <Link to="/admin-dashboard" className="inline-flex items-center text-yellow-300 hover:text-yellow-200 mb-4 font-bold">
               <ArrowLeftIcon className="w-5 h-5 mr-2" />
               Back to Dashboard
             </Link>

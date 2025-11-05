@@ -16,13 +16,14 @@ import { motion } from "framer-motion";
 
 export function Home() {
   const [overallProgress, setOverallProgress] = useState(null);
+  const [studentData, setStudentData] = useState(null);
   const { user, isAuthenticated, syncUserProgress } = useAuth();
   const [floatingElements, setFloatingElements] = useState([]);
 
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuthenticated && user && user.email) {
       syncUserProgress();
-      loadOverallProgress();
+      loadStudentData();
     }
 
     // Generate slow floating emoji
@@ -38,14 +39,55 @@ export function Home() {
     setFloatingElements(elements);
   }, [isAuthenticated, user]);
 
-  const loadOverallProgress = () => {
-    const moduleConfigs = [
-      { name: "Mathematics", totalLessons: 4 },
-      { name: "Science", totalLessons: 4 },
-      { name: "Indian Sign Language", totalLessons: 4 },
-    ];
-    const progress = lessonService.getOverallProgress(moduleConfigs);
-    setOverallProgress(progress);
+  const loadStudentData = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${API_URL}/api/student/${user.email}`);
+      if (!response.ok) throw new Error('Failed to fetch student data');
+      const data = await response.json();
+      setStudentData(data);
+      
+      // Calculate overall progress from student data
+      const moduleConfigs = [
+        { name: "Mathematics", totalLessons: 4 },
+        { name: "Science", totalLessons: 4 },
+        { name: "Indian Sign Language", totalLessons: 4 },
+      ];
+      
+      // Use student data to calculate progress
+      const completedLessons = data.numberOfLessonsCompleted || 0;
+      const totalLessons = moduleConfigs.reduce((sum, m) => sum + m.totalLessons, 0);
+      const overallCompletionPercentage = totalLessons > 0 
+        ? Math.round((completedLessons / totalLessons) * 100) 
+        : 0;
+      
+      // Calculate module progress (simplified - you may want to store per-module progress)
+      const moduleStats = {};
+      moduleConfigs.forEach(module => {
+        const moduleProgress = completedLessons > 0 ? Math.floor((completedLessons / totalLessons) * module.totalLessons) : 0;
+        moduleStats[module.name] = {
+          completedLessons: Math.min(moduleProgress, module.totalLessons),
+          totalLessons: module.totalLessons
+        };
+      });
+      
+      setOverallProgress({
+        completedLessons,
+        totalLessons,
+        overallCompletionPercentage,
+        moduleStats
+      });
+    } catch (error) {
+      console.error('Error loading student data:', error);
+      // Fallback to lessonService if API fails
+      const moduleConfigs = [
+        { name: "Mathematics", totalLessons: 4 },
+        { name: "Science", totalLessons: 4 },
+        { name: "Indian Sign Language", totalLessons: 4 },
+      ];
+      const progress = lessonService.getOverallProgress(moduleConfigs);
+      setOverallProgress(progress);
+    }
   };
 
   return (
@@ -275,10 +317,12 @@ export function Home() {
                         <div className="mb-6 bg-white/20 backdrop-blur-md rounded-xl p-4 border border-white/30">
                           <div className="flex justify-between items-center mb-2">
                             <span className="text-sm font-bold text-white">Progress</span>
-                            <span className="text-sm font-bold text-white">{module.progress}/4 ⭐</span>
+                            <span className="text-sm font-bold text-white">
+                              {overallProgress?.moduleStats[module.title]?.completedLessons || 0}/4 ⭐
+                            </span>
                           </div>
                           <ProgressBar
-                            progress={module.progress}
+                            progress={overallProgress?.moduleStats[module.title]?.completedLessons || 0}
                             total={4}
                             label=""
                             color="white"

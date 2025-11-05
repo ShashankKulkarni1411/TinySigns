@@ -3,6 +3,10 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const { connectDatabase } = require('./config/db');
 const User = require('./models/userModel');
+const Student = require('./models/Student');
+const Teacher = require('./models/Teacher');
+const Admin = require('./models/Admin');
+const Parent = require('./models/Parent');
 
 dotenv.config();
 
@@ -68,6 +72,123 @@ app.delete('/api/users/:email', async (req, res, next) => {
     const user = await User.findOneAndDelete({ email: req.params.email });
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json({ message: 'User deleted' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Student endpoints
+app.get('/api/student/:email', async (req, res, next) => {
+  try {
+    let student = await Student.findOne({ email: req.params.email });
+    if (!student) {
+      student = await Student.create({ email: req.params.email });
+    }
+    res.json(student);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/api/student/:email', async (req, res, next) => {
+  try {
+    let student = await Student.findOneAndUpdate(
+      { email: req.params.email },
+      req.body,
+      { new: true, upsert: true, runValidators: true }
+    );
+    res.json(student);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Teacher endpoints
+app.get('/api/teacher/:email', async (req, res, next) => {
+  try {
+    let teacher = await Teacher.findOne({ email: req.params.email });
+    if (!teacher) {
+      teacher = await Teacher.create({ email: req.params.email });
+    }
+    res.json(teacher);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/api/teacher/:email', async (req, res, next) => {
+  try {
+    let teacher = await Teacher.findOneAndUpdate(
+      { email: req.params.email },
+      req.body,
+      { new: true, upsert: true, runValidators: true }
+    );
+    res.json(teacher);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Admin endpoints
+app.get('/api/admin/:email', async (req, res, next) => {
+  try {
+    let admin = await Admin.findOne({ email: req.params.email });
+    if (!admin) {
+      admin = await Admin.create({ email: req.params.email });
+    }
+    res.json(admin);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/api/admin/:email', async (req, res, next) => {
+  try {
+    let admin = await Admin.findOneAndUpdate(
+      { email: req.params.email },
+      req.body,
+      { new: true, upsert: true, runValidators: true }
+    );
+    res.json(admin);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Parent endpoints
+app.get('/api/parent/:email', async (req, res, next) => {
+  try {
+    let parent = await Parent.findOne({ email: req.params.email });
+    if (!parent) {
+      parent = await Parent.create({ email: req.params.email });
+    }
+    
+    // Fetch children's data if children exist
+    if (parent.children && parent.children.length > 0) {
+      const childrenData = await Promise.all(
+        parent.children.map(async (child) => {
+          const student = await Student.findOne({ email: child.studentEmail });
+          return student || { email: child.studentEmail, notFound: true };
+        })
+      );
+      parent = parent.toObject();
+      parent.childrenData = childrenData;
+    }
+    
+    res.json(parent);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/api/parent/:email', async (req, res, next) => {
+  try {
+    let parent = await Parent.findOneAndUpdate(
+      { email: req.params.email },
+      req.body,
+      { new: true, upsert: true, runValidators: true }
+    );
+    res.json(parent);
   } catch (err) {
     next(err);
   }

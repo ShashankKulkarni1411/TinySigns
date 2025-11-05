@@ -23,6 +23,7 @@ export function TeacherDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
+  const [teacherData, setTeacherData] = useState(null);
   const [classStats, setClassStats] = useState({
     totalStudents: 0,
     activeStudents: 0,
@@ -31,76 +32,41 @@ export function TeacherDashboard() {
   });
 
   useEffect(() => {
-    // Mock data for students
-    const mockStudents = [
-      {
-        id: 1,
-        name: 'Emma Johnson',
-        grade: '3rd Grade',
-        avatar: 'E',
-        lastActive: '2 hours ago',
-        progress: {
-          isl: { completed: 3, total: 4, score: 85, needsHelp: false },
-          mathematics: { completed: 2, total: 5, score: 78, needsHelp: true },
-          science: { completed: 1, total: 3, score: 92, needsHelp: false }
-        },
-        attendance: 95,
-        behavior: 'Excellent'
-      },
-      {
-        id: 2,
-        name: 'Alex Johnson',
-        grade: '5th Grade',
-        avatar: 'A',
-        lastActive: '1 day ago',
-        progress: {
-          isl: { completed: 4, total: 4, score: 95, needsHelp: false },
-          mathematics: { completed: 4, total: 5, score: 88, needsHelp: false },
-          science: { completed: 2, total: 3, score: 85, needsHelp: false }
-        },
-        attendance: 98,
-        behavior: 'Good'
-      },
-      {
-        id: 3,
-        name: 'Sarah Wilson',
-        grade: '4th Grade',
-        avatar: 'S',
-        lastActive: '3 hours ago',
-        progress: {
-          isl: { completed: 2, total: 4, score: 65, needsHelp: true },
-          mathematics: { completed: 1, total: 5, score: 72, needsHelp: true },
-          science: { completed: 3, total: 3, score: 88, needsHelp: false }
-        },
-        attendance: 87,
-        behavior: 'Needs Attention'
-      }
-    ];
+    if (user && user.email) {
+      loadTeacherData();
+    }
+  }, [user]);
 
-    setStudents(mockStudents);
-    
-    // Calculate class stats
-    const totalLessons = mockStudents.reduce((acc, student) => {
-      return acc + Object.values(student.progress).reduce((studentAcc, module) => {
-        return studentAcc + module.completed;
-      }, 0);
-    }, 0);
+  const loadTeacherData = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${API_URL}/api/teacher/${user.email}`);
+      if (!response.ok) throw new Error('Failed to fetch teacher data');
+      const data = await response.json();
+      setTeacherData(data);
 
-    const totalScores = mockStudents.reduce((acc, student) => {
-      return acc + Object.values(student.progress).reduce((studentAcc, module) => {
-        return studentAcc + module.score;
-      }, 0);
-    }, 0);
+      // Set class stats from teacher data
+      setClassStats({
+        totalStudents: data.totalStudents || 0,
+        activeStudents: data.activeToday || 0,
+        averageScore: data.classAverage || 0,
+        lessonsCompleted: data.lessonsCompleted || 0,
+      });
 
-    const totalModules = mockStudents.length * 3;
-
-    setClassStats({
-      totalStudents: mockStudents.length,
-      activeStudents: mockStudents.filter(student => student.lastActive.includes('hour')).length,
-      averageScore: Math.round(totalScores / totalModules),
-      lessonsCompleted: totalLessons,
-    });
-  }, []);
+      // If teacher has students data, process it
+      // Note: You may need to add a separate endpoint to fetch teacher's students
+      // For now, we'll use the stats from teacher data
+      setStudents([]);
+    } catch (error) {
+      console.error('Error loading teacher data:', error);
+      setClassStats({
+        totalStudents: 0,
+        activeStudents: 0,
+        averageScore: 0,
+        lessonsCompleted: 0,
+      });
+    }
+  };
 
   const getProgressColor = (completed, total) => {
     const percentage = (completed / total) * 100;
@@ -192,7 +158,7 @@ export function TeacherDashboard() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Total Students</p>
-                  <p className="text-3xl font-bold text-gray-900">{classStats.totalStudents}</p>
+                  <p className="text-3xl font-bold text-gray-900">{classStats.totalStudents || 0}</p>
                 </div>
               </div>
             </div>
@@ -204,7 +170,7 @@ export function TeacherDashboard() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Active Today</p>
-                  <p className="text-3xl font-bold text-gray-900">{classStats.activeStudents}</p>
+                  <p className="text-3xl font-bold text-gray-900">{classStats.activeStudents || 0}</p>
                 </div>
               </div>
             </div>
@@ -216,7 +182,7 @@ export function TeacherDashboard() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Lessons Completed</p>
-                  <p className="text-3xl font-bold text-gray-900">{classStats.lessonsCompleted}</p>
+                  <p className="text-3xl font-bold text-gray-900">{classStats.lessonsCompleted || 0}</p>
                 </div>
               </div>
             </div>
@@ -228,7 +194,7 @@ export function TeacherDashboard() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Class Average</p>
-                  <p className="text-3xl font-bold text-gray-900">{classStats.averageScore}%</p>
+                  <p className="text-3xl font-bold text-gray-900">{classStats.averageScore || 0}%</p>
                 </div>
               </div>
             </div>

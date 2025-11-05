@@ -21,6 +21,7 @@ import { motion } from 'framer-motion';
 export function ParentDashboard() {
   const { user } = useAuth();
   const [children, setChildren] = useState([]);
+  const [parentData, setParentData] = useState(null);
   const [userProgress, setUserProgress] = useState({
     progress: 0,
     individualProgress: {
@@ -38,10 +39,8 @@ export function ParentDashboard() {
   const [floatingElements, setFloatingElements] = useState([]);
 
   useEffect(() => {
-    // Load user's progress
-    if (user) {
-      const progress = lessonService.getUserProgress();
-      setUserProgress(progress);
+    if (user && user.email) {
+      loadParentData();
     }
 
     // Generate floating emoji
@@ -55,61 +54,75 @@ export function ParentDashboard() {
       scale: 0.4 + Math.random() * 0.4
     }));
     setFloatingElements(elements);
-
-    // Mock data for children
-    const mockChildren = [
-      {
-        id: 1,
-        name: 'Emma Johnson',
-        age: 8,
-        grade: '3rd Grade',
-        avatar: 'E',
-        lastActive: '2 hours ago',
-        progress: {
-          isl: { completed: 3, total: 4, score: 85 },
-          mathematics: { completed: 2, total: 5, score: 78 },
-          science: { completed: 1, total: 3, score: 92 }
-        }
-      },
-      {
-        id: 2,
-        name: 'Alex Johnson',
-        age: 10,
-        grade: '5th Grade',
-        avatar: 'A',
-        lastActive: '1 day ago',
-        progress: {
-          isl: { completed: 4, total: 4, score: 95 },
-          mathematics: { completed: 4, total: 5, score: 88 },
-          science: { completed: 2, total: 3, score: 85 }
-        }
-      }
-    ];
-
-    setChildren(mockChildren);
-    
-    // Calculate overall stats
-    const totalLessons = mockChildren.reduce((acc, child) => {
-      return acc + Object.values(child.progress).reduce((childAcc, module) => {
-        return childAcc + module.completed;
-      }, 0);
-    }, 0);
-
-    const totalScores = mockChildren.reduce((acc, child) => {
-      return acc + Object.values(child.progress).reduce((childAcc, module) => {
-        return childAcc + module.score;
-      }, 0);
-    }, 0);
-
-    const totalModules = mockChildren.length * 3;
-
-    setOverallStats({
-      totalChildren: mockChildren.length,
-      activeChildren: mockChildren.filter(child => child.lastActive.includes('hour')).length,
-      totalLessonsCompleted: totalLessons,
-      averageScore: Math.round(totalScores / totalModules),
-    });
   }, [user]);
+
+  const loadParentData = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${API_URL}/api/parent/${user.email}`);
+      if (!response.ok) throw new Error('Failed to fetch parent data');
+      const data = await response.json();
+      setParentData(data);
+
+      // Process children data
+      if (data.childrenData && data.childrenData.length > 0) {
+        const processedChildren = data.childrenData
+          .filter(child => !child.notFound)
+          .map((child, index) => {
+            const completed = child.numberOfLessonsCompleted || 0;
+            const avgScore = child.averageScore || 0;
+            return {
+              id: index + 1,
+              email: child.email,
+              name: child.email.split('@')[0] || 'Child',
+              avatar: child.email.charAt(0).toUpperCase(),
+              lastActive: child.updatedAt ? new Date(child.updatedAt).toLocaleString() : 'Never',
+              progress: {
+                isl: { completed: Math.floor(completed / 3), total: 4, score: avgScore },
+                mathematics: { completed: Math.floor(completed / 3), total: 4, score: avgScore },
+                science: { completed: Math.floor(completed / 3), total: 4, score: avgScore }
+              }
+            };
+          });
+        setChildren(processedChildren);
+        
+        // Calculate overall stats from real data
+        const totalLessons = processedChildren.reduce((acc, child) => {
+          return acc + (child.progress.isl.completed + child.progress.mathematics.completed + child.progress.science.completed);
+        }, 0);
+
+        const totalScores = processedChildren.reduce((acc, child) => {
+          return acc + (child.progress.isl.score + child.progress.mathematics.score + child.progress.science.score);
+        }, 0);
+
+        const totalModules = processedChildren.length * 3;
+
+        setOverallStats({
+          totalChildren: processedChildren.length || data.children?.length || 0,
+          activeChildren: processedChildren.length || 0,
+          totalLessonsCompleted: totalLessons || data.totalChildrenActivity || 0,
+          averageScore: totalModules > 0 ? Math.round(totalScores / totalModules) : (data.avgScore || 0),
+        });
+      } else {
+        // No children yet
+        setOverallStats({
+          totalChildren: data.children?.length || 0,
+          activeChildren: 0,
+          totalLessonsCompleted: data.totalChildrenActivity || 0,
+          averageScore: data.avgScore || 0,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading parent data:', error);
+      // Fallback to empty state
+      setOverallStats({
+        totalChildren: 0,
+        activeChildren: 0,
+        totalLessonsCompleted: 0,
+        averageScore: 0,
+      });
+    }
+  };
 
   const getProgressColor = (completed, total) => {
     const percentage = (completed / total) * 100;
