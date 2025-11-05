@@ -3,6 +3,7 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { lessonService } from '../services/lessonService';
 import { getVideoForLesson } from '../services/videoLinkService';
+import { useAuth } from '../contexts/AuthContext';
 import { 
   ArrowLeftIcon, 
   ArrowRightIcon, 
@@ -17,6 +18,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 export function LessonPage() {
   const { moduleName, lessonId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [lessonCompleted, setLessonCompleted] = useState(false);
   const [timeSpent, setTimeSpent] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -90,10 +92,35 @@ export function LessonPage() {
   }, [videoSrc]);
 
   const handleCompleteLesson = async () => {
-    if (lessonCompleted) return;
+    if (lessonCompleted || !user) return;
     
     setIsLoading(true);
     try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      
+      // Update student progress in MongoDB
+      const studentResponse = await fetch(`${API_URL}/api/student/${user.email}`, {
+        credentials: 'include'
+      });
+      
+      if (studentResponse.ok) {
+        const studentData = await studentResponse.json();
+        
+        // Increment numberOfLessonsCompleted
+        const updatedData = {
+          numberOfLessonsCompleted: (studentData.numberOfLessonsCompleted || 0) + 1,
+          timeSpent: (studentData.timeSpent || 0) + Math.floor(timeSpent / 60) // Add minutes
+        };
+        
+        await fetch(`${API_URL}/api/student/${user.email}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(updatedData)
+        });
+      }
+      
+      // Also update via lessonService for local state
       await lessonService.completeLesson(currentModule.name, lessonNum, timeSpent);
       setLessonCompleted(true);
     } catch (error) {

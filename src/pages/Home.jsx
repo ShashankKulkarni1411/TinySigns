@@ -42,7 +42,9 @@ export function Home() {
   const loadStudentData = async () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${API_URL}/api/student/${user.email}`);
+      const response = await fetch(`${API_URL}/api/student/${user.email}`, {
+        credentials: 'include'
+      });
       if (!response.ok) throw new Error('Failed to fetch student data');
       const data = await response.json();
       setStudentData(data);
@@ -54,19 +56,21 @@ export function Home() {
         { name: "Indian Sign Language", totalLessons: 4 },
       ];
       
-      // Use student data to calculate progress
+      // Use student data to calculate progress dynamically
       const completedLessons = data.numberOfLessonsCompleted || 0;
       const totalLessons = moduleConfigs.reduce((sum, m) => sum + m.totalLessons, 0);
       const overallCompletionPercentage = totalLessons > 0 
         ? Math.round((completedLessons / totalLessons) * 100) 
         : 0;
       
-      // Calculate module progress (simplified - you may want to store per-module progress)
+      // Calculate module progress (distribute evenly across modules)
       const moduleStats = {};
       moduleConfigs.forEach(module => {
-        const moduleProgress = completedLessons > 0 ? Math.floor((completedLessons / totalLessons) * module.totalLessons) : 0;
+        // Calculate progress per module (assuming even distribution)
+        const lessonsPerModule = completedLessons / moduleConfigs.length;
+        const moduleProgress = Math.min(Math.floor(lessonsPerModule), module.totalLessons);
         moduleStats[module.name] = {
-          completedLessons: Math.min(moduleProgress, module.totalLessons),
+          completedLessons: moduleProgress,
           totalLessons: module.totalLessons
         };
       });

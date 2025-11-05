@@ -13,6 +13,9 @@ export function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showRoleSelect, setShowRoleSelect] = useState(false);
+  const [availableRoles, setAvailableRoles] = useState([]);
+  const [userName, setUserName] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -32,58 +35,100 @@ export function Login() {
       setLoading(true);
       setError('');
 
-      // Fetch users from backend
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users`
-      );
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      
+      // First check if email has multiple roles
+      const checkResponse = await fetch(`${API_URL}/api/auth/check-roles`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      });
 
-      if (!response.ok) throw new Error('Failed to fetch users');
+      if (!checkResponse.ok) {
+        const errorData = await checkResponse.json();
+        throw new Error(errorData.message || 'Login failed');
+      }
 
-      const users = await response.json();
-      const user = users.find(
-        (u) => u.email === formData.email && u.password === formData.password
-      );
-
-      if (!user) {
-        setError('Invalid email or password');
+      const checkData = await checkResponse.json();
+      
+      // If multiple roles exist, show role selector
+      if (checkData.hasMultipleRoles) {
+        setAvailableRoles(checkData.availableRoles);
+        setUserName(checkData.name);
+        setShowRoleSelect(true);
+        setLoading(false);
         return;
       }
 
-      // Ensure user has progress fields initialized
-      const userWithProgress = {
-        ...user,
-        progress: user.progress || 0,
-        individualProgress: user.individualProgress || {
-          mathematics: 0,
-          science: 0,
-          isl: 0
-        }
-      };
-
-      // Login successful
-      await login(userWithProgress);
+      // Single role - proceed with login
+      await login(checkData.user);
       
-      // Navigate based on user role (LandingPage is only for first visit)
-      switch (user.stakeholder || 'student') {
-        case 'student':
-          navigate('/home');
-          break;
-        case 'parent':
-          navigate('/parent-dashboard');
-          break;
-        case 'teacher':
-          navigate('/teacher-dashboard');
-          break;
-        case 'admin':
-          navigate('/admin-dashboard');
-          break;
-        default:
-          navigate('/home');
-      }
+      // Navigate based on user role
+      navigateToDashboard(checkData.user.role);
     } catch (err) {
       setError(err.message);
-    } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRoleSelect = async (selectedRole) => {
+    try {
+      setLoading(true);
+      setError('');
+
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      
+      // Login with selected role
+      const response = await fetch(`${API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          role: selectedRole
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Login failed');
+      }
+
+      const data = await response.json();
+      
+      // Login successful
+      await login(data.user);
+      setShowRoleSelect(false);
+      
+      // Navigate based on selected role
+      navigateToDashboard(selectedRole);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
+  const navigateToDashboard = (role) => {
+    switch (role) {
+      case 'student':
+        navigate('/home');
+        break;
+      case 'parent':
+        navigate('/parent-dashboard');
+        break;
+      case 'teacher':
+        navigate('/teacher-dashboard');
+        break;
+      case 'admin':
+        navigate('/admin-dashboard');
+        break;
+      default:
+        navigate('/home');
     }
   };
 
@@ -103,7 +148,40 @@ export function Login() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit}>
+          {showRoleSelect ? (
+            <div className="space-y-4">
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-bold text-gray-800 mb-2">
+                  Welcome, {userName}!
+                </h2>
+                <p className="text-gray-600">This email is registered for multiple roles. Please choose how you'd like to log in:</p>
+              </div>
+              
+              <div className="space-y-3">
+                {availableRoles.map((role) => (
+                  <button
+                    key={role}
+                    onClick={() => handleRoleSelect(role)}
+                    disabled={loading}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 capitalize"
+                  >
+                    {loading ? 'Logging in...' : `Login as ${role}`}
+                  </button>
+                ))}
+              </div>
+              
+              <button
+                onClick={() => {
+                  setShowRoleSelect(false);
+                  setAvailableRoles([]);
+                }}
+                className="w-full text-gray-600 hover:text-gray-800 text-sm font-medium"
+              >
+                Back
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit}>
             {/* Email */}
             <div className="mb-6">
               <label htmlFor="email" className="block text-gray-700 mb-2 font-medium">
@@ -193,6 +271,7 @@ export function Login() {
               </p>
             </div>
           </form>
+          )}
         </div>
       </main>
       <Footer />

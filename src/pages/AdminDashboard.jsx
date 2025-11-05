@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Header } from '../components/Header';
+import { AdminHeader } from '../components/AdminHeader';
 import { Footer } from '../components/Footer';
 import { useAuth } from '../contexts/AuthContext';
 import { 
@@ -39,7 +39,9 @@ export function AdminDashboard() {
   const loadAdminData = async () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${API_URL}/api/admin/${user.email}`);
+      const response = await fetch(`${API_URL}/api/admin/${user.email}`, {
+        credentials: 'include'
+      });
       if (!response.ok) throw new Error('Failed to fetch admin data');
       const data = await response.json();
       setAdminData(data);
@@ -122,7 +124,7 @@ export function AdminDashboard() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700 text-white">
-      <Header />
+      <AdminHeader />
       <main className="flex-grow p-6">
         <div className="container mx-auto">
           {/* Welcome Section */}

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Header } from '../components/Header';
+import { TeacherHeader } from '../components/TeacherHeader';
 import { Footer } from '../components/Footer';
+import { AddStudentModal } from '../components/AddStudentModal';
 import { useAuth } from '../contexts/AuthContext';
+import toast, { Toaster } from 'react-hot-toast';
 import { 
   UsersIcon, 
   BookOpenIcon, 
@@ -24,6 +26,7 @@ export function TeacherDashboard() {
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
   const [teacherData, setTeacherData] = useState(null);
+  const [showAddStudentModal, setShowAddStudentModal] = useState(false);
   const [classStats, setClassStats] = useState({
     totalStudents: 0,
     activeStudents: 0,
@@ -40,7 +43,9 @@ export function TeacherDashboard() {
   const loadTeacherData = async () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${API_URL}/api/teacher/${user.email}`);
+      const response = await fetch(`${API_URL}/api/teacher/${user.email}`, {
+        credentials: 'include'
+      });
       if (!response.ok) throw new Error('Failed to fetch teacher data');
       const data = await response.json();
       setTeacherData(data);
@@ -68,6 +73,11 @@ export function TeacherDashboard() {
     }
   };
 
+  const handleAddStudentSuccess = (data) => {
+    // Refresh teacher data
+    loadTeacherData();
+  };
+
   const getProgressColor = (completed, total) => {
     const percentage = (completed / total) * 100;
     if (percentage >= 80) return 'bg-green-500';
@@ -93,7 +103,7 @@ export function TeacherDashboard() {
   );
 
   const handleAddStudent = () => {
-    navigate('/teacher/add-student');
+    setShowAddStudentModal(true);
   };
 
   const handleGenerateReport = () => {
@@ -126,7 +136,13 @@ export function TeacherDashboard() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
-      <Header />
+      <Toaster position="top-right" />
+      <TeacherHeader />
+      <AddStudentModal
+        isOpen={showAddStudentModal}
+        onClose={() => setShowAddStudentModal(false)}
+        onSuccess={handleAddStudentSuccess}
+      />
       
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-green-600 via-emerald-600 to-blue-600 text-white py-16 shadow-lg">

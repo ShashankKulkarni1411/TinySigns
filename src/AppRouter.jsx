@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { Home } from './pages/Home';
 import { LandingPage } from './pages/LandingPage';
 import { SignUp } from './pages/SignUp';
@@ -44,41 +45,49 @@ export function AppRouter() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/home" element={<Home />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/mathematics" element={<MathematicsModule />} />
-          <Route path="/mathematics/exam" element={<MathematicsExam />} />
-          <Route path="/isl" element={<IndianSignLanguage />} />
-          <Route path="/isl/exam" element={<ISLExam />} />
-          <Route path="/science" element={<Science />} />
-          <Route path="/science/exam" element={<ScienceExam />} />
-          <Route path="/dashboard" element={<ExamDashboardPage />} />
-          <Route path="/review/:moduleName" element={<ReviewLessons />} />
-          <Route path="/:moduleName/lesson/:lessonId" element={<LessonPage />} />
-          <Route path="/parent-dashboard" element={<ParentDashboard />} />
-          <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/analytics" element={<AdminAnalytics />} />
-          <Route path="/admin/users" element={<AdminUserManagement />} />
-          <Route path="/admin/content" element={<AdminContentManagement />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
-          <Route path="/admin/database" element={<AdminDatabase />} />
-          <Route path="/admin/security" element={<AdminSecurity />} />
-          <Route path="/admin/monitoring" element={<AdminMonitoring />} />
-          <Route path="/teacher/add-student" element={<TeacherAddStudent />} />
-          <Route path="/teacher/reports" element={<TeacherReports />} />
-          <Route path="/teacher/student-progress/:studentId" element={<TeacherStudentProgress />} />
-          <Route path="/teacher/messages" element={<TeacherMessages />} />
-          <Route path="/teacher/messages/:studentId" element={<TeacherMessages />} />
-          <Route path="/teacher/lesson-plans" element={<TeacherLessonPlans />} />
-          <Route path="/teacher/assessments" element={<TeacherAssessments />} />
-          <Route path="/teacher/settings" element={<TeacherSettings />} />
-          <Route path="/add-child" element={<AddChildPath />} />
-          <Route path="/child-progress/:childId" element={<ChildProgressPage />} />
-          <Route path="/schedule" element={<SchedulePage />} />
-          <Route path="/messages" element={<MessagesPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          
+          {/* Protected Routes */}
+          <Route path="/home" element={<ProtectedRoute requiredRole="student"><Home /></ProtectedRoute>} />
+          <Route path="/mathematics" element={<ProtectedRoute><MathematicsModule /></ProtectedRoute>} />
+          <Route path="/mathematics/exam" element={<ProtectedRoute><MathematicsExam /></ProtectedRoute>} />
+          <Route path="/isl" element={<ProtectedRoute><IndianSignLanguage /></ProtectedRoute>} />
+          <Route path="/isl/exam" element={<ProtectedRoute><ISLExam /></ProtectedRoute>} />
+          <Route path="/science" element={<ProtectedRoute><Science /></ProtectedRoute>} />
+          <Route path="/science/exam" element={<ProtectedRoute><ScienceExam /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><ExamDashboardPage /></ProtectedRoute>} />
+          <Route path="/review/:moduleName" element={<ProtectedRoute><ReviewLessons /></ProtectedRoute>} />
+          <Route path="/:moduleName/lesson/:lessonId" element={<ProtectedRoute><LessonPage /></ProtectedRoute>} />
+          
+          {/* Parent Routes */}
+          <Route path="/parent-dashboard" element={<ProtectedRoute requiredRole="parent"><ParentDashboard /></ProtectedRoute>} />
+          <Route path="/add-child" element={<ProtectedRoute requiredRole="parent"><AddChildPath /></ProtectedRoute>} />
+          <Route path="/child-progress/:childId" element={<ProtectedRoute requiredRole="parent"><ChildProgressPage /></ProtectedRoute>} />
+          <Route path="/schedule" element={<ProtectedRoute requiredRole="parent"><SchedulePage /></ProtectedRoute>} />
+          <Route path="/messages" element={<ProtectedRoute requiredRole="parent"><MessagesPage /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+          
+          {/* Teacher Routes */}
+          <Route path="/teacher-dashboard" element={<ProtectedRoute requiredRole="teacher"><TeacherDashboard /></ProtectedRoute>} />
+          <Route path="/teacher/add-student" element={<ProtectedRoute requiredRole="teacher"><TeacherAddStudent /></ProtectedRoute>} />
+          <Route path="/teacher/reports" element={<ProtectedRoute requiredRole="teacher"><TeacherReports /></ProtectedRoute>} />
+          <Route path="/teacher/student-progress/:studentId" element={<ProtectedRoute requiredRole="teacher"><TeacherStudentProgress /></ProtectedRoute>} />
+          <Route path="/teacher/messages" element={<ProtectedRoute requiredRole="teacher"><TeacherMessages /></ProtectedRoute>} />
+          <Route path="/teacher/messages/:studentId" element={<ProtectedRoute requiredRole="teacher"><TeacherMessages /></ProtectedRoute>} />
+          <Route path="/teacher/lesson-plans" element={<ProtectedRoute requiredRole="teacher"><TeacherLessonPlans /></ProtectedRoute>} />
+          <Route path="/teacher/assessments" element={<ProtectedRoute requiredRole="teacher"><TeacherAssessments /></ProtectedRoute>} />
+          <Route path="/teacher/settings" element={<ProtectedRoute requiredRole="teacher"><TeacherSettings /></ProtectedRoute>} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin-dashboard" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/analytics" element={<ProtectedRoute requiredRole="admin"><AdminAnalytics /></ProtectedRoute>} />
+          <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUserManagement /></ProtectedRoute>} />
+          <Route path="/admin/content" element={<ProtectedRoute requiredRole="admin"><AdminContentManagement /></ProtectedRoute>} />
+          <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><AdminSettings /></ProtectedRoute>} />
+          <Route path="/admin/database" element={<ProtectedRoute requiredRole="admin"><AdminDatabase /></ProtectedRoute>} />
+          <Route path="/admin/security" element={<ProtectedRoute requiredRole="admin"><AdminSecurity /></ProtectedRoute>} />
+          <Route path="/admin/monitoring" element={<ProtectedRoute requiredRole="admin"><AdminMonitoring /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

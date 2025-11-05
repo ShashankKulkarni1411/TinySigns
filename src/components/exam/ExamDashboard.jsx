@@ -7,24 +7,63 @@ import {
   CalendarIcon,
   AwardIcon
 } from 'lucide-react';
-import { examService } from '../../services/examService';
+import { useAuth } from '../../contexts/AuthContext';
 
 export function ExamDashboard() {
+  const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [recentResults, setRecentResults] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadDashboardData();
-  }, []);
+    if (user && user.email) {
+      loadDashboardData();
+    }
+  }, [user]);
 
-  const loadDashboardData = () => {
+  const loadDashboardData = async () => {
     try {
-      const userStats = examService.getUserStats();
-      const history = examService.getExamHistory();
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${API_URL}/api/student/progress/${user.email}`, {
+        credentials: 'include'
+      });
       
-      setStats(userStats);
-      setRecentResults(history.slice(0, 5)); // Show last 5 exams
+      if (!response.ok) throw new Error('Failed to fetch student progress');
+      
+      const data = await response.json();
+      
+      // Transform API data to match component expectations
+      setStats({
+        totalExams: data.totalExams || 0,
+        averageScore: data.averageScore || 0,
+        bestScore: data.bestScore || 0,
+        totalTimeSpent: data.timeSpent || 0, // in minutes, convert to seconds
+        marksInExams: data.marksInExams || 0,
+        modulesCompleted: Math.floor((data.numberOfLessonsCompleted || 0) / 4),
+        moduleStats: {
+          'Indian Sign Language': {
+            attempts: 0,
+            bestScore: data.averageScore || 0,
+            averageScore: data.averageScore || 0,
+            lastAttempt: Date.now()
+          },
+          'Mathematics': {
+            attempts: 0,
+            bestScore: data.averageScore || 0,
+            averageScore: data.averageScore || 0,
+            lastAttempt: Date.now()
+          },
+          'Science': {
+            attempts: 0,
+            bestScore: data.averageScore || 0,
+            averageScore: data.averageScore || 0,
+            lastAttempt: Date.now()
+          }
+        }
+      });
+      
+      // Set empty recent results for now (can be extended later)
+      setRecentResults([]);
       setLoading(false);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -145,45 +184,37 @@ export function ExamDashboard() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Time Spent</p>
-              <p className="text-2xl font-bold text-gray-900">{formatTime(stats.totalTimeSpent)}</p>
+              <p className="text-2xl font-bold text-gray-900">{formatTime((stats.totalTimeSpent || 0) * 60)}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Module Stats */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-bold text-gray-800 mb-4">Module Progress</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {Object.entries(stats.moduleStats).map(([moduleName, moduleStats]) => (
-            <div key={moduleName} className="border rounded-lg p-4">
-              <h4 className="font-semibold text-gray-800 mb-2">{moduleName}</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Attempts:</span>
-                  <span className="font-medium">{moduleStats.attempts}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Best Score:</span>
-                  <span className={`font-medium ${getScoreColor(moduleStats.bestScore)}`}>
-                    {moduleStats.bestScore}%
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Average:</span>
-                  <span className="font-medium">{moduleStats.averageScore}%</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Last Attempt:</span>
-                  <span className="font-medium text-xs">
-                    {formatDate(moduleStats.lastAttempt)}
-                  </span>
-                </div>
-              </div>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-bold text-gray-800 mb-4">Exam Statistics</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="border rounded-lg p-4">
+              <h4 className="font-semibold text-gray-800 mb-2">Total Exams</h4>
+              <p className="text-3xl font-bold text-indigo-600">{stats.totalExams || 0}</p>
+              <p className="text-sm text-gray-600 mt-2">Exams attempted</p>
             </div>
-          ))}
+            <div className="border rounded-lg p-4">
+              <h4 className="font-semibold text-gray-800 mb-2">Average Score</h4>
+              <p className={`text-3xl font-bold ${getScoreColor(stats.averageScore)}`}>
+                {stats.averageScore || 0}%
+              </p>
+              <p className="text-sm text-gray-600 mt-2">Overall average</p>
+            </div>
+            <div className="border rounded-lg p-4">
+              <h4 className="font-semibold text-gray-800 mb-2">Best Score</h4>
+              <p className={`text-3xl font-bold ${getScoreColor(stats.bestScore)}`}>
+                {stats.bestScore || 0}%
+              </p>
+              <p className="text-sm text-gray-600 mt-2">Highest achieved</p>
+            </div>
+          </div>
         </div>
-      </div>
 
       {/* Recent Results */}
       <div className="bg-white rounded-lg shadow-md p-6">

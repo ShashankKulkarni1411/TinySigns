@@ -10,10 +10,10 @@ export function SignUp() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    parentEmail: '', // For student role
     password: '',
     confirmPassword: '',
     role: 'student',
-     
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -56,21 +56,36 @@ export function SignUp() {
       setLoading(true);
       setError('');
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/users`,
-        {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      
+      // Create user first
+      const userResponse = await fetch(`${API_URL}/api/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          username: formData.name,
+          email: formData.email,
+          password: formData.password,
+          stakeholder: formData.role
+        }),
+      });
+
+      if (!userResponse.ok) throw new Error('Failed to create user');
+
+      // If student, create student record with auto-link to parent
+      if (formData.role === 'student') {
+        const studentResponse = await fetch(`${API_URL}/api/student/create`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
-            username: formData.name,
             email: formData.email,
-            password: formData.password,
-            stakeholder: formData.role
+            parentEmail: formData.parentEmail || ''
           }),
-        }
-      );
-
-      if (!response.ok) throw new Error('Failed to create user');
+        });
+        // Don't fail if student creation fails, user is already created
+      }
 
       setFormStep(3);
     } catch (err) {
@@ -81,8 +96,7 @@ export function SignUp() {
   };
 
   // Dynamic placeholder for email field based on role
-  const emailPlaceholder =
-    formData.role === 'student' ? "Parent's Email" : 'Your Email';
+  const emailPlaceholder = 'Your Email';
 
   return (
     <div className="flex flex-col min-h-screen bg-blue-50">
@@ -160,6 +174,31 @@ export function SignUp() {
                     />
                   </div>
                 </div>
+
+                {/* Parent Email (only for students) */}
+                {formData.role === 'student' && (
+                  <div className="mb-6">
+                    <label htmlFor="parentEmail" className="block text-gray-700 mb-2 font-medium">
+                      Parent's Email (Optional)
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <MailIcon className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="email"
+                        id="parentEmail"
+                        value={formData.parentEmail}
+                        onChange={handleChange}
+                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="parent@example.com"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      A parent account will be created automatically if this email is provided
+                    </p>
+                  </div>
+                )}
 
                 {/* Avatar upload */}
                

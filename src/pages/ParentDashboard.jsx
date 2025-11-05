@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Header } from '../components/Header';
+import { ParentHeader } from '../components/ParentHeader';
 import { Footer } from '../components/Footer';
+import { AddChildModal } from '../components/AddChildModal';
 import { useAuth } from '../contexts/AuthContext';
 import { lessonService } from '../services/lessonService';
+import toast, { Toaster } from 'react-hot-toast';
 import { 
   UsersIcon, 
   BookOpenIcon, 
@@ -22,6 +24,7 @@ export function ParentDashboard() {
   const { user } = useAuth();
   const [children, setChildren] = useState([]);
   const [parentData, setParentData] = useState(null);
+  const [showAddChildModal, setShowAddChildModal] = useState(false);
   const [userProgress, setUserProgress] = useState({
     progress: 0,
     individualProgress: {
@@ -59,7 +62,9 @@ export function ParentDashboard() {
   const loadParentData = async () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${API_URL}/api/parent/${user.email}`);
+      const response = await fetch(`${API_URL}/api/parent/${user.email}`, {
+        credentials: 'include'
+      });
       if (!response.ok) throw new Error('Failed to fetch parent data');
       const data = await response.json();
       setParentData(data);
@@ -122,6 +127,11 @@ export function ParentDashboard() {
         averageScore: 0,
       });
     }
+  };
+
+  const handleAddChildSuccess = (data) => {
+    // Refresh parent data
+    loadParentData();
   };
 
   const getProgressColor = (completed, total) => {
@@ -195,7 +205,13 @@ export function ParentDashboard() {
         />
       </div>
 
-      <Header />
+      <ParentHeader />
+      <Toaster position="top-right" />
+      <AddChildModal
+        isOpen={showAddChildModal}
+        onClose={() => setShowAddChildModal(false)}
+        onSuccess={handleAddChildSuccess}
+      />
       
       <main className="flex-grow relative z-10 p-6">
         <div className="container mx-auto max-w-7xl">
@@ -294,12 +310,12 @@ export function ParentDashboard() {
                 </div>
                 <h2 className="text-3xl font-black">Your Amazing Kids! 🎉</h2>
               </div>
-              <Link
-                to="/add-child"
+              <button
+                onClick={() => setShowAddChildModal(true)}
                 className="bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-300 hover:to-orange-300 text-gray-900 font-black px-6 py-3 rounded-full transition-all shadow-lg hover:shadow-2xl transform hover:scale-105"
               >
                 + Add Child
-              </Link>
+              </button>
             </div>
 
             <div className="space-y-6">
