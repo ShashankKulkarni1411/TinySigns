@@ -17,6 +17,13 @@ import { LessonPage } from './pages/LessonPage';
 import { ParentDashboard } from './pages/ParentDashboard';
 import { TeacherDashboard } from './pages/TeacherDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { AdminAnalytics } from './pages/AdminAnalytics';
+import { AdminUserManagement } from './pages/AdminUserManagement';
+import { AdminContentManagement } from './pages/AdminContentManagement';
+import { AdminSettings } from './pages/AdminSettings';
+import { AdminDatabase } from './pages/AdminDatabase';
+import { AdminSecurity } from './pages/AdminSecurity';
+import { AdminMonitoring } from './pages/AdminMonitoring';
 
 export function AppRouter() {
   return (
@@ -39,6 +46,13 @@ export function AppRouter() {
           <Route path="/parent-dashboard" element={<ParentDashboard />} />
           <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/analytics" element={<AdminAnalytics />} />
+          <Route path="/admin/users" element={<AdminUserManagement />} />
+          <Route path="/admin/content" element={<AdminContentManagement />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="/admin/database" element={<AdminDatabase />} />
+          <Route path="/admin/security" element={<AdminSecurity />} />
+          <Route path="/admin/monitoring" element={<AdminMonitoring />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
