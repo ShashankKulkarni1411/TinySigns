@@ -25,27 +25,6 @@ Database	MongoDB Atlas
 Auth	Google OAuth 2.0
 Deployment	Render (Frontend + Backend)
 Version Control	GitHub
-
-Project Structure
-TinySigns/
-│
-├── backend/
-│   ├── server.js
-│   ├── package.json
-│   ├── routes/
-│   ├── models/
-│   ├── controllers/
-│   └── .env
-│
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   ├── vite.config.js
-│   ├── package.json
-│   └── .env
-│
-└── README.md
-
 Environment Variables
 Backend .env
 PORT=5000
