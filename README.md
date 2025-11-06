@@ -26,24 +26,7 @@ Auth	Google OAuth 2.0
 Deployment	Render (Frontend + Backend)
 Version Control	GitHub
 
-TinySigns/
-│
-├── backend/
-│   ├── server.js
-│   ├── package.json
-│   ├── routes/
-│   ├── models/
-│   ├── controllers/
-│   └── .env
-│
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   ├── vite.config.js
-│   ├── package.json
-│   └── .env
-│
-└── README.md
+ 
 
 
 Environment Variables
