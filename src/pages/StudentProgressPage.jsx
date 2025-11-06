@@ -289,37 +289,43 @@ export function StudentProgressPage() {
             </motion.div>
           )}
 
-          {/* Exam Results */}
-          {progressData.totalExams > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
-              className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border-2 border-white/20 rounded-3xl p-8 shadow-2xl"
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-3 rounded-2xl">
-                  <AwardIcon className="w-8 h-8" />
-                </div>
-                <h2 className="text-3xl font-black">Exam Results 🎯</h2>
+          {/* Exam Results - Always visible */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.8 }}
+            className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border-2 border-white/20 rounded-3xl p-8 shadow-2xl"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-3 rounded-2xl">
+                <AwardIcon className="w-8 h-8" />
               </div>
+              <h2 className="text-3xl font-black">Exam Performance 🎯</h2>
+            </div>
 
+            {progressData.totalExams > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+                  <div className="text-sm text-white/70 font-bold mb-2">Exams Taken</div>
+                  <div className="text-4xl font-black">{progressData.totalExams || 0}</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
                   <div className="text-sm text-white/70 font-bold mb-2">Average Score</div>
-                  <div className="text-4xl font-black">{progressData.averageScore || 0}%</div>
+                  <div className="text-4xl font-black">{progressData.averageScore?.toFixed(1) || 0}%</div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
                   <div className="text-sm text-white/70 font-bold mb-2">Best Score</div>
                   <div className="text-4xl font-black">{progressData.bestScore || 0}%</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-                  <div className="text-sm text-white/70 font-bold mb-2">Total Exams</div>
-                  <div className="text-4xl font-black">{progressData.totalExams || 0}</div>
-                </div>
               </div>
-            </motion.div>
-          )}
+            ) : (
+              <div className="text-center py-8">
+                <div className="text-6xl mb-4">📝</div>
+                <p className="text-xl text-white/80 font-bold mb-2">No exams taken yet</p>
+                <p className="text-white/60">Complete lessons and take exams to see your scores here!</p>
+              </div>
+            )}
+          </motion.div>
         </div>
       </main>
 

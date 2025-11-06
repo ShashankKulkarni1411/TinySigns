@@ -3,6 +3,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const http = require('http');
 const { Server } = require('socket.io');
 const { connectDatabase } = require('./config/db');
@@ -11,7 +13,9 @@ const Student = require('./models/Student');
 const Teacher = require('./models/Teacher');
 const Admin = require('./models/Admin');
 const Parent = require('./models/Parent');
+const Lesson = require('./models/Lesson');
 
+// Load environment variables
 dotenv.config();
 
 const app = express();
@@ -25,6 +29,7 @@ const io = new Server(server, {
 });
 
 // Session configuration
+// Note: Must be configured before passport middleware
 app.use(session({
   secret: process.env.SESSION_SECRET || 'tinySigns-secret-key-change-in-production',
   resave: false,
@@ -34,16 +39,138 @@ app.use(session({
     ttl: 14 * 24 * 60 * 60 // 14 days
   }),
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === 'production', // HTTPS required in production
     httpOnly: true,
-    maxAge: 14 * 24 * 60 * 60 * 1000 // 14 days
+    maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' // Required for OAuth in production
+  }
+}));
+
+// Initialize Passport and restore authentication state from session
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Passport serialization - store user ID in session
+passport.serializeUser((user, done) => {
+  done(null, user._id);
+});
+
+// Passport deserialization - retrieve user from session
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (err) {
+    done(err, null);
+  }
+});
+
+// Google OAuth Strategy Configuration
+// This strategy handles Google OAuth2 authentication flow
+const googleCallbackURL = process.env.GOOGLE_CALLBACK_URL || 
+  (process.env.NODE_ENV === 'production' 
+    ? 'https://tinysigns.vercel.app/auth/google/callback'
+    : 'http://localhost:3000/auth/google/callback');
+
+// Validate Google OAuth credentials at startup
+if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+  console.warn('⚠️  WARNING: Google OAuth credentials not found in environment variables.');
+  console.warn('   Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env file.');
+} else {
+  console.log('✅ Google OAuth credentials loaded');
+  console.log('📋 Callback URL:', googleCallbackURL);
+  console.log('⚠️  IMPORTANT: Make sure this callback URL is registered in Google Cloud Console!');
+}
+
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  // Redirect URI - must match exactly what's configured in Google Cloud Console
+  // For local dev: http://localhost:3000/auth/google/callback
+  // For production: https://tinysigns.vercel.app/auth/google/callback
+  callbackURL: googleCallbackURL,
+  scope: ['profile', 'email'] // Request user profile and email
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    // Extract user information from Google profile
+    const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
+    const name = profile.displayName || profile.name?.givenName || 'User';
+    const profilePicture = profile.photos && profile.photos[0] ? profile.photos[0].value : '';
+    const googleId = profile.id;
+
+    if (!email) {
+      return done(new Error('No email found in Google profile'), null);
+    }
+
+    // Check if user already exists by email
+    let user = await User.findOne({ email: email });
+
+    if (user) {
+      // User exists - update Google OAuth info if not already set
+      if (!user.googleId) {
+        user.googleId = googleId;
+        user.authProvider = 'google';
+        if (!user.profilePicture && profilePicture) {
+          user.profilePicture = profilePicture;
+        }
+        await user.save();
+      }
+      // Mark as logged in
+      user.loggedIn = true;
+      await user.save();
+      return done(null, user);
+    } else {
+      // New user - create account with Google info
+      user = await User.create({
+        username: name,
+        email: email,
+        password: '', // No password for OAuth users
+        stakeholder: 'student', // Default role - can be changed later
+        loggedIn: true,
+        googleId: googleId,
+        profilePicture: profilePicture,
+        authProvider: 'google'
+      });
+      return done(null, user);
+    }
+  } catch (err) {
+    console.error('❌ Google OAuth strategy error:', err);
+    console.error('   Error details:', err.message);
+    // Log specific error types for easier debugging
+    if (err.message && err.message.includes('redirect_uri_mismatch')) {
+      console.error('   ⚠️  REDIRECT URI MISMATCH!');
+      console.error('   Expected callback URL:', googleCallbackURL);
+      console.error('   Make sure this URL is registered in Google Cloud Console:');
+      console.error('   https://console.cloud.google.com/apis/credentials');
+    }
+    return done(err, null);
   }
 }));
 
 // Middleware
+// CORS configuration - must allow credentials for OAuth sessions
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, or OAuth redirects)
+    const allowedOrigins = [
+      process.env.FRONTEND_URL || 'http://localhost:5173',
+      'http://localhost:3000',
+      'https://tinysigns.vercel.app'
+    ];
+    
+    // Allow requests with no origin (server-to-server, OAuth callbacks)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // Required for OAuth sessions and cookies
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
@@ -172,6 +299,188 @@ app.post('/api/auth/logout', (req, res) => {
     }
     res.json({ message: 'Logout successful' });
   });
+});
+
+// ============================================
+// Google OAuth2 Routes (Passport.js)
+// ============================================
+
+/**
+ * GET /auth/google
+ * Initiates Google OAuth2 login flow
+ * Redirects user to Google's consent screen
+ */
+app.get('/auth/google', (req, res, next) => {
+  // Validate Google OAuth configuration
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    console.error('❌ Google OAuth not configured. Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET in .env');
+    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=google_not_configured`);
+  }
+
+  // Log the expected callback URL for debugging
+  const expectedCallbackUrl = process.env.GOOGLE_CALLBACK_URL || 
+    (process.env.NODE_ENV === 'production' 
+      ? 'https://tinysigns.vercel.app/auth/google/callback'
+      : 'http://localhost:3000/auth/google/callback');
+  
+  console.log('🔐 Starting Google OAuth flow...');
+  console.log('📋 Expected callback URL:', expectedCallbackUrl);
+  console.log('⚠️  Make sure this URL is registered in Google Cloud Console!');
+
+  // Use Passport to authenticate with Google
+  // Passport will handle redirecting to Google's OAuth consent screen
+  passport.authenticate('google', {
+    scope: ['profile', 'email'], // Request user profile and email
+    prompt: 'select_account' // Always show account selection
+  })(req, res, next);
+});
+
+/**
+ * GET /auth/google/callback
+ * Handles the OAuth callback from Google
+ * This is where Google redirects after user grants/denies permission
+ */
+app.get('/auth/google/callback', 
+  // Step 1: Authenticate with Google using Passport
+  passport.authenticate('google', { 
+    failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=google`,
+    session: true // Enable session
+  }),
+  // Step 2: If authentication succeeds, this function runs
+  async (req, res) => {
+    try {
+      // At this point, req.user is set by Passport (from the strategy callback)
+      const user = req.user;
+
+      if (!user) {
+        console.error('❌ No user found after Google authentication');
+        return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=google`);
+      }
+
+      // Update session with user information
+      req.session.loggedin = true;
+      req.session.email = user.email;
+      req.session.role = user.stakeholder || 'student';
+      req.session.name = user.username;
+
+      console.log('✅ Google OAuth successful for:', user.email);
+
+      // Determine redirect path based on user role
+      const dashboardRoutes = {
+        student: '/home',
+        parent: '/parent-dashboard',
+        teacher: '/teacher-dashboard',
+        admin: '/admin-dashboard'
+      };
+      const redirectPath = dashboardRoutes[user.stakeholder] || '/home';
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      
+      // Redirect to appropriate dashboard
+      res.redirect(`${frontendUrl}${redirectPath}`);
+    } catch (err) {
+      console.error('❌ Error in Google OAuth callback:', err);
+      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=google`);
+    }
+  }
+);
+
+// Legacy route for backward compatibility (if frontend still uses /api/auth/google)
+app.get('/api/auth/google', (req, res) => {
+  res.redirect('/auth/google');
+});
+
+// OAuth Facebook Login - Initial redirect
+app.get('/api/auth/facebook', async (req, res) => {
+  try {
+    const FB_APP_ID = process.env.FB_APP_ID;
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+    const redirectUri = `${backendUrl}/api/auth/facebook/callback`;
+    
+    if (!FB_APP_ID) {
+      return res.status(500).json({ message: 'Facebook OAuth not configured. Please set FB_APP_ID in environment variables.' });
+    }
+    
+    const authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${FB_APP_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=email,public_profile&response_type=code`;
+    
+    res.redirect(authUrl);
+  } catch (err) {
+    res.status(500).json({ message: 'OAuth error: ' + err.message });
+  }
+});
+
+// OAuth Facebook Callback
+app.get('/api/auth/facebook/callback', async (req, res) => {
+  try {
+    const { code } = req.query;
+    if (!code) {
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=oauth_failed`);
+    }
+
+    const FB_APP_ID = process.env.FB_APP_ID;
+    const FB_APP_SECRET = process.env.FB_APP_SECRET;
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+    const redirectUri = `${backendUrl}/api/auth/facebook/callback`;
+
+    // Exchange code for access token
+    const tokenUrl = `https://graph.facebook.com/v18.0/oauth/access_token?client_id=${FB_APP_ID}&client_secret=${FB_APP_SECRET}&redirect_uri=${encodeURIComponent(redirectUri)}&code=${code}`;
+    
+    const tokenResponse = await fetch(tokenUrl, {
+      method: 'GET'
+    });
+
+    if (!tokenResponse.ok) {
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=token_exchange_failed`);
+    }
+
+    const tokenData = await tokenResponse.json();
+    
+    // Get user info from Facebook
+    const userInfoResponse = await fetch(`https://graph.facebook.com/v18.0/me?fields=id,name,email&access_token=${tokenData.access_token}`);
+
+    if (!userInfoResponse.ok) {
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=user_info_failed`);
+    }
+
+    const userInfo = await userInfoResponse.json();
+
+    // Find or create user
+    let user = await User.findOne({ email: userInfo.email });
+    if (!user && userInfo.email) {
+      // Create user with default role
+      user = await User.create({
+        username: userInfo.name || userInfo.email.split('@')[0],
+        email: userInfo.email,
+        password: 'oauth_' + Math.random().toString(36).substring(7),
+        stakeholder: 'student',
+        loggedIn: true
+      });
+    } else if (user) {
+      user.loggedIn = true;
+      await user.save();
+    } else {
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=no_email`);
+    }
+
+    // Create session
+    req.session.loggedin = true;
+    req.session.email = user.email;
+    req.session.role = user.stakeholder || 'student';
+    req.session.name = user.username;
+
+    // Redirect to appropriate dashboard
+    const dashboardRoutes = {
+      student: '/home',
+      parent: '/parent-dashboard',
+      teacher: '/teacher-dashboard',
+      admin: '/admin-dashboard'
+    };
+    const redirectPath = dashboardRoutes[user.stakeholder] || '/home';
+    
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}${redirectPath}`);
+  } catch (err) {
+    console.error('Facebook OAuth error:', err);
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=oauth_error`);
+  }
 });
 
 // Routes
@@ -608,7 +917,7 @@ app.post('/api/teacher/add-student', requireRole('teacher'), async (req, res, ne
   }
 });
 
-// Create lesson plan
+// Create lesson plan (legacy - kept for compatibility)
 app.post('/api/teacher/create-plan', requireRole('teacher'), async (req, res, next) => {
   try {
     const teacherEmail = req.session.email;
@@ -624,6 +933,116 @@ app.post('/api/teacher/create-plan', requireRole('teacher'), async (req, res, ne
 
     io.emit('teacher-updated', { email: teacherEmail });
     res.json({ message: 'Lesson plan created', teacher });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Schedule a new lesson (saves to Lesson collection)
+app.post('/api/teacher/schedule-lesson', requireRole('teacher'), async (req, res, next) => {
+  try {
+    const teacherEmail = req.session.email;
+    const { title, subject, date, description, status, students } = req.body;
+    
+    // Get teacher to link lesson
+    let teacher = await Teacher.findOne({ email: teacherEmail });
+    if (!teacher) {
+      teacher = await Teacher.create({ email: teacherEmail });
+    }
+
+    // Create new lesson
+    const lesson = new Lesson({
+      title,
+      subject,
+      date: new Date(date),
+      description: description || '',
+      teacherId: teacher._id,
+      teacherEmail: teacherEmail,
+      status: status || 'Upcoming',
+      students: students || []
+    });
+
+    await lesson.save();
+
+    // Emit Socket.IO event for real-time update
+    io.emit('lesson-scheduled', { teacherEmail, lesson });
+
+    res.status(201).json({ message: 'Lesson scheduled successfully', lesson });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Get teacher's scheduled lessons
+app.get('/api/teacher/:teacherEmail/lessons', requireAuth, async (req, res, next) => {
+  try {
+    const teacherEmail = req.params.teacherEmail;
+    
+    // Verify access
+    if (req.session.role !== 'admin' && req.session.email !== teacherEmail) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    const lessons = await Lesson.find({ teacherEmail })
+      .sort({ date: 1 }) // Sort by date ascending
+      .populate('students', 'email');
+
+    res.json(lessons);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Update a scheduled lesson
+app.put('/api/teacher/lesson/:lessonId', requireRole('teacher'), async (req, res, next) => {
+  try {
+    const teacherEmail = req.session.email;
+    const { lessonId } = req.params;
+
+    const lesson = await Lesson.findById(lessonId);
+    if (!lesson) {
+      return res.status(404).json({ message: 'Lesson not found' });
+    }
+
+    // Verify teacher owns this lesson
+    if (lesson.teacherEmail !== teacherEmail) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    // Update lesson
+    Object.assign(lesson, req.body);
+    if (req.body.date) {
+      lesson.date = new Date(req.body.date);
+    }
+    await lesson.save();
+
+    io.emit('lesson-updated', { teacherEmail, lesson });
+    res.json({ message: 'Lesson updated successfully', lesson });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Delete a scheduled lesson
+app.delete('/api/teacher/lesson/:lessonId', requireRole('teacher'), async (req, res, next) => {
+  try {
+    const teacherEmail = req.session.email;
+    const { lessonId } = req.params;
+
+    const lesson = await Lesson.findById(lessonId);
+    if (!lesson) {
+      return res.status(404).json({ message: 'Lesson not found' });
+    }
+
+    // Verify teacher owns this lesson
+    if (lesson.teacherEmail !== teacherEmail) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    await Lesson.findByIdAndDelete(lessonId);
+
+    io.emit('lesson-deleted', { teacherEmail, lessonId });
+    res.json({ message: 'Lesson deleted successfully' });
   } catch (err) {
     next(err);
   }
