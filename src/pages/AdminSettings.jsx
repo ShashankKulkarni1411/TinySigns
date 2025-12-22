@@ -235,14 +235,7 @@ export function AdminSettings() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-bold mb-2">Google Analytics ID</label>
-                <input
-                  type="text"
-                  placeholder="UA-XXXXXXXXX-X"
-                  className="w-full px-4 py-3 bg-white/10 backdrop-blur-md border-2 border-white/20 rounded-2xl text-white font-medium focus:outline-none focus:border-yellow-300"
-                />
-              </div>
+
             </div>
           </div>
         </div>
