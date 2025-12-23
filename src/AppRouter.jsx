@@ -39,11 +39,12 @@ import { StudentProgressPage } from './pages/StudentProgressPage';
 import { SchedulePage } from './pages/SchedulePage';
 import { MessagesPage } from './pages/MessagesPage';
 import { SettingsPage } from './pages/SettingsPage';
-
+import { ScrollToTop } from './pages/ScrollToTop';
 export function AppRouter() {
   return (
     <AuthProvider>
       <BrowserRouter>
+      <ScrollToTop />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/signup" element={<SignUp />} />
